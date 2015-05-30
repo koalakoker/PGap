@@ -31,11 +31,12 @@ class PGapMain:
         self.builder.connect_signals(handlers)
         
     def onTestButtonPressed(self,button):
+        notebook = self.notebook
         
         #Create new page
         text = gtk.TextView()
-        buffer = text.get_buffer()
-        buffer.set_text("new page" + str(self.newPage))
+        txBuffer = text.get_buffer()
+        txBuffer.set_text("new page" + str(self.newPage))
         text.show()
         scroll = gtk.ScrolledWindow()
         scroll.add(text)
@@ -47,7 +48,8 @@ class PGapMain:
         label = gtk.Label("Page " + str(self.newPage))
         self.newPage += 1
         
-        self.notebook.append_page(view, label)
+        newPageIndex = notebook.append_page(view, label)
+        notebook.set_current_page(newPageIndex)
         
     def onDeleteButtonPressed(self,button):
         notebook = self.notebook
