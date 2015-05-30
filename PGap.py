@@ -7,12 +7,12 @@ Created on 30/mag/2015
 import sys
 try:
     import gtk
-    import gtk.glade
 except:
     sys.exit(1)
 
 class PGapMain:
-    newPage = 2
+    newPage = 2 #default value 1 is the welcome screen
+    textMargins = 5
     
     def __init__(self):
         
@@ -25,7 +25,7 @@ class PGapMain:
         window.show_all()
         
         handlers = { "onDeleteWindow": gtk.main_quit,
-                     "onTestButton": self.onTestButtonPressed,
+                     "onNewButton": self.onTestButtonPressed,
                      "onDeleteButton": self.onDeleteButtonPressed
                    }
         self.builder.connect_signals(handlers)
@@ -38,9 +38,13 @@ class PGapMain:
         txBuffer = text.get_buffer()
         txBuffer.set_text("new page" + str(self.newPage))
         text.show()
+        text.set_wrap_mode(gtk.WRAP_WORD)
+        text.set_left_margin(self.textMargins)
+        text.set_right_margin(self.textMargins)
         scroll = gtk.ScrolledWindow()
         scroll.add(text)
         scroll.show()
+        scroll.set_policy(gtk.POLICY_NEVER,gtk.POLICY_AUTOMATIC)
         view = gtk.Viewport()
         view.add(scroll)
         view.show()
