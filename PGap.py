@@ -12,6 +12,7 @@ except:
     sys.exit(1)
 
 class PGapMain:
+    newPage = 2
     
     def __init__(self):
         
@@ -20,19 +21,37 @@ class PGapMain:
         self.builder = gtk.Builder()
         self.builder.add_from_file(self.gladefile)
         window = self.builder.get_object("pgapui")
+        self.notebook = self.builder.get_object("notebook")
         window.show_all()
         
-        handlers = { "onDeleteWindow": gtk.main_quit, "onTestButton": self.onTestButtonPressed }
+        handlers = { "onDeleteWindow": gtk.main_quit,
+                     "onTestButton": self.onTestButtonPressed,
+                     "onDeleteButton": self.onDeleteButtonPressed
+                   }
         self.builder.connect_signals(handlers)
         
     def onTestButtonPressed(self,button):
-        notebook = self.builder.get_object("notebook")
-#         print (type(notebook))
-        checkbutton = gtk.CheckButton("Check me please!")
-        checkbutton.set_size_request(100, 75)
-        checkbutton.show ()    
-        label = gtk.Label("Add page")
-        notebook.insert_page(checkbutton, label, 2)
+        
+        #Create new page
+        text = gtk.TextView()
+        buffer = text.get_buffer()
+        buffer.set_text("new page" + str(self.newPage))
+        text.show()
+        scroll = gtk.ScrolledWindow()
+        scroll.add(text)
+        scroll.show()
+        view = gtk.Viewport()
+        view.add(scroll)
+        view.show()
+            
+        label = gtk.Label("Page " + str(self.newPage))
+        self.newPage += 1
+        
+        self.notebook.append_page(view, label)
+        
+    def onDeleteButtonPressed(self,button):
+        notebook = self.notebook
+        notebook.remove_page(notebook.get_current_page())
 
 if __name__ == '__main__':
     main = PGapMain()
