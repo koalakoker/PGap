@@ -33,6 +33,19 @@ class NoteModel(gtk.TreeStore):
                 self.newPageID += 1
 
 class PGapMain:
+    
+    columnInfo = ('Note title', 'ID', 'Creation Time', 'Last Modify')
+    
+    def getColumnInfo(self, istr):
+        #returns the first showColumn that match istr inside columnInfo
+        i = 0
+        pos = -1
+        for s in self.columnInfo:
+            if (s == istr):
+                if (pos == -1):
+                    pos = i
+            i += 1
+        return pos
 
     # close the window and quit
     def delete_event(self, widget, event, data=None):
@@ -52,10 +65,13 @@ class PGapMain:
                      "onNewButton": self.onTestClk,
                      "onDeleteButton": self.onTestClk,
                      "onTestClk": self.onTestClk,
+                     "on_ID_toggled": self.updateColumnView,
+                     "on_Last modify_toggled": self.updateColumnView,
+                     "on_Creation Time_toggled": self.updateColumnView
                    }
         self.builder.connect_signals(handlers)
 
-        # create a TreeStore with one string column to use as the model
+        # create a TreeStore with one string showColumn to use as the model
         self.NoteStore = NoteModel()
         #Populate
         self.NoteStore.populate()
@@ -64,26 +80,24 @@ class PGapMain:
         self.treeview =  self.builder.get_object("treeview")
         self.treeview.set_model(self.NoteStore)
         
-        columnInfo = ('Note title', 'ID', 'Creation Time', 'Last modify')
-        
         self.tvcolumn = [None , None, None, None]
         self.cell = [None , None, None, None]
         
         for i in range(4):
             # create the TreeViewColumn to display the data
-            self.tvcolumn[i] = gtk.TreeViewColumn(columnInfo[i])
+            self.tvcolumn[i] = gtk.TreeViewColumn(self.columnInfo[i])
             # add tvcolumn to treeview
             self.treeview.append_column(self.tvcolumn[i])
             # create a CellRendererText to render the data
             self.cell[i] = gtk.CellRendererText()
             # add the cell to the tvcolumn and allow it to expand
             self.tvcolumn[i].pack_start(self.cell[i], True)
-            # set the cell "text" attribute to column 0 - retrieve text
-            # from that column in NoteStore
+            # set the cell "text" attribute to showColumn 0 - retrieve text
+            # from that showColumn in NoteStore
             self.tvcolumn[i].add_attribute(self.cell[i], 'text', i)
-            # Allow sorting on the column
+            # Allow sorting on the showColumn
             self.tvcolumn[i].set_sort_column_id(i)
-            # Allow resize of column
+            # Allow resize of showColumn
             self.tvcolumn[i].set_resizable(True)
         
         # make it searchable
@@ -92,11 +106,17 @@ class PGapMain:
         # Allow drag and drop reordering of rows
         self.treeview.set_reorderable(True)
         
-    def column(self, column, show):
-        self.tvcolumn[column].set_visible(show)
-        
+        #update column view accordind glade file
+        self.updateColumnView(None)
+                
+    def updateColumnView(self, CheckMenuItem):
+        for i in range(len(self.columnInfo)):
+            itm = self.builder.get_object(self.columnInfo[i])
+            if (itm != None):
+                self.tvcolumn[i].set_visible(itm.get_active())
+            
     def onTestClk(self, button):
-        self.column(0, False)
+        pass
     
 if __name__ == '__main__':
     main = PGapMain()
