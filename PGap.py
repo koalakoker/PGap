@@ -47,6 +47,13 @@ class PGapMain:
         self.window.resize(1024,600)
         self.window.show_all()
         self.window.connect("delete_event", self.delete_event)
+        
+        handlers = { "onDeleteWindow": gtk.main_quit,
+                     "onNewButton": self.onTestClk,
+                     "onDeleteButton": self.onTestClk,
+                     "onTestClk": self.onTestClk,
+                   }
+        self.builder.connect_signals(handlers)
 
         # create a TreeStore with one string column to use as the model
         self.NoteStore = NoteModel()
@@ -76,6 +83,8 @@ class PGapMain:
             self.tvcolumn[i].add_attribute(self.cell[i], 'text', i)
             # Allow sorting on the column
             self.tvcolumn[i].set_sort_column_id(i)
+            # Allow resize of column
+            self.tvcolumn[i].set_resizable(True)
         
         # make it searchable
         self.treeview.set_search_column(0)
@@ -83,6 +92,12 @@ class PGapMain:
         # Allow drag and drop reordering of rows
         self.treeview.set_reorderable(True)
         
+    def column(self, column, show):
+        self.tvcolumn[column].set_visible(show)
+        
+    def onTestClk(self, button):
+        self.column(0, False)
+    
 if __name__ == '__main__':
     main = PGapMain()
     gtk.main()
