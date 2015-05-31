@@ -80,16 +80,16 @@ class PGapMain:
         self.treeview =  self.builder.get_object("treeview")
         self.treeview.set_model(self.NoteStore)
         
-        self.tvcolumn = [None , None, None, None]
-        self.cell = [None , None, None, None]
+        self.tvcolumn = []
+        self.cell = []
         
-        for i in range(4):
+        for i in range(len(self.columnInfo)):
             # create the TreeViewColumn to display the data
-            self.tvcolumn[i] = gtk.TreeViewColumn(self.columnInfo[i])
+            self.tvcolumn.append(gtk.TreeViewColumn(self.columnInfo[i]))
             # add tvcolumn to treeview
             self.treeview.append_column(self.tvcolumn[i])
             # create a CellRendererText to render the data
-            self.cell[i] = gtk.CellRendererText()
+            self.cell.append(gtk.CellRendererText())
             # add the cell to the tvcolumn and allow it to expand
             self.tvcolumn[i].pack_start(self.cell[i], True)
             # set the cell "text" attribute to showColumn 0 - retrieve text
