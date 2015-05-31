@@ -4,61 +4,83 @@ Created on 30/mag/2015
 @author: koala
 '''
 
-import sys
-try:
-    import gtk
-except:
-    sys.exit(1)
+import pygtk
+pygtk.require('2.0')
+import gtk
+import gobject
+import datetime
 
-class PGapMain:
-    newPage = 2 #default value 1 is the welcome screen
-    textMargins = 5
+class NoteModel(gtk.TreeStore):
+    newPageID = 2 #default value 1 is the welcome screen
     
     def __init__(self):
+        gtk.TreeStore.__init__(self, gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        #init treestore with the following types
+        # 0: String - Title of the note
+        # 1: Int - ID of the note (unique ID inside the db)
+        # 2: String - Time stamp (Creation)
+        # 3: String - Time stamp (Last modification) 
         
-        #Set the Glade file
+    def populate(self):
+        for parent in range(4):
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now))
+            self.newPageID += 1
+            for child in range(3):
+                now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now))
+                self.newPageID += 1
+
+class PGapMain:
+
+    # close the window and quit
+    def delete_event(self, widget, event, data=None):
+        gtk.main_quit()
+        return False
+
+    def __init__(self):
         self.gladefile = "pgapgui.glade"  
         self.builder = gtk.Builder()
         self.builder.add_from_file(self.gladefile)
-        window = self.builder.get_object("pgapui")
-        self.notebook = self.builder.get_object("notebook")
-        window.show_all()
-        
-        handlers = { "onDeleteWindow": gtk.main_quit,
-                     "onNewButton": self.onTestButtonPressed,
-                     "onDeleteButton": self.onDeleteButtonPressed
-                   }
-        self.builder.connect_signals(handlers)
-        
-    def onTestButtonPressed(self,button):
-        notebook = self.notebook
-        
-        #Create new page
-        text = gtk.TextView()
-        txBuffer = text.get_buffer()
-        txBuffer.set_text("new page" + str(self.newPage))
-        text.show()
-        text.set_wrap_mode(gtk.WRAP_WORD)
-        text.set_left_margin(self.textMargins)
-        text.set_right_margin(self.textMargins)
-        scroll = gtk.ScrolledWindow()
-        scroll.add(text)
-        scroll.show()
-        scroll.set_policy(gtk.POLICY_NEVER,gtk.POLICY_AUTOMATIC)
-        view = gtk.Viewport()
-        view.add(scroll)
-        view.show()
-            
-        label = gtk.Label("Page " + str(self.newPage))
-        self.newPage += 1
-        
-        newPageIndex = notebook.append_page(view, label)
-        notebook.set_current_page(newPageIndex)
-        
-    def onDeleteButtonPressed(self,button):
-        notebook = self.notebook
-        notebook.remove_page(notebook.get_current_page())
+        self.window = self.builder.get_object("pgapui")
+        self.window.show_all()
+        self.window.connect("delete_event", self.delete_event)
 
+        # create a TreeStore with one string column to use as the model
+        self.NoteStore = NoteModel()
+        #Populate
+        self.NoteStore.populate()
+
+        # create the TreeView using NoteStore
+        self.treeview =  self.builder.get_object("treeview")
+        self.treeview.set_model(self.NoteStore)
+        
+        columnInfo = ('Note title', 'ID', 'Creation Time', 'Last modify')
+        
+        self.tvcolumn = [None , None, None, None]
+        self.cell = [None , None, None, None]
+        
+        for i in range(4):
+            # create the TreeViewColumn to display the data
+            self.tvcolumn[i] = gtk.TreeViewColumn(columnInfo[i])
+            # add tvcolumn to treeview
+            self.treeview.append_column(self.tvcolumn[i])
+            # create a CellRendererText to render the data
+            self.cell[i] = gtk.CellRendererText()
+            # add the cell to the tvcolumn and allow it to expand
+            self.tvcolumn[i].pack_start(self.cell[i], True)
+            # set the cell "text" attribute to column 0 - retrieve text
+            # from that column in NoteStore
+            self.tvcolumn[i].add_attribute(self.cell[i], 'text', i)
+            # Allow sorting on the column
+            self.tvcolumn[i].set_sort_column_id(i)
+        
+        # make it searchable
+        self.treeview.set_search_column(0)
+        
+        # Allow drag and drop reordering of rows
+        self.treeview.set_reorderable(True)
+        
 if __name__ == '__main__':
     main = PGapMain()
     gtk.main()
