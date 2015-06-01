@@ -111,14 +111,6 @@ class PGapMain:
         self.updateColumnView(None)
         
         self.textbuffer = self.builder.get_object("textbuffer")
-        self.tag_bold = self.textbuffer.create_tag("bold",
-            weight=pango.WEIGHT_BOLD)
-        self.tag_italic = self.textbuffer.create_tag("italic",
-            style=pango.STYLE_ITALIC)
-        self.tag_underline = self.textbuffer.create_tag("underline",
-            underline=pango.UNDERLINE_SINGLE)
-        self.tag_found = self.textbuffer.create_tag("found",
-            background="yellow")
         
         # to make it nice we'll put the toolbar into the handle box, 
         # so that it can be detached from the main window
@@ -127,8 +119,7 @@ class PGapMain:
         self.vbox.pack_start(handlebox, False, False, 0)
         self.vbox.reorder_child(handlebox,0)
 
-        # toolbar will be horizontal, with both icons and text, and
-        # with 5pxl spaces between items and finally, 
+        # toolbar will be horizontal, with icons and finally, 
         # we'll also put it into our handlebox
         toolbar = gtk.Toolbar()
         toolbar.set_orientation(gtk.ORIENTATION_HORIZONTAL)
@@ -136,32 +127,46 @@ class PGapMain:
         toolbar.set_border_width(0)
         handlebox.add(toolbar)
 
-        iconw = gtk.Image()
-        iconw.set_from_file("img/bold.png")
-        button_bold = toolbar.append_item(
-            "Bold",           # button label
-            "Bold", # this button's tooltip
-            "Private",         # tooltip private info
-            iconw,             # icon widget
-            self.onTestClk)    # a signal
+        iconw = []
+        iconw.append(gtk.Image())
+        iconw[0].set_from_file("img/bold.png")
+        self.tag_bold = self.textbuffer.create_tag("Bold",
+            weight=pango.WEIGHT_BOLD)
+        toolbar.append_item(
+            "Bold",                 # button label
+            "Bold",                 # this button's tooltip
+            "Private",              # tooltip private info
+            iconw[0],               # icon widget
+            self.on_button_clicked, # a signal
+            self.tag_bold)          # tag bold
         
-        iconw2 = gtk.Image()
-        iconw2.set_from_file("img/underline.png")
-        button_undeline = toolbar.append_item(
-            "Undeline",           # button label
-            "Undeline", # this button's tooltip
-            "Private",         # tooltip private info
-            iconw2,             # icon widget
-            self.onTestClk)    # a signal
         
-        iconw3 = gtk.Image()
-        iconw3.set_from_file("img/italic.png")
-        button_undeline = toolbar.append_item(
-            "Italic",           # button label
-            "Italic", # this button's tooltip
-            "Private",         # tooltip private info
-            iconw3,             # icon widget
-            self.onTestClk)    # a signal
+        iconw.append(gtk.Image())
+        iconw[1].set_from_file("img/underline.png")
+        self.tag_underline = self.textbuffer.create_tag("Underline",
+            underline=pango.UNDERLINE_SINGLE)
+        toolbar.append_item(
+            "Underline",            # button label
+            "Underline",            # this button's tooltip
+            "Private",              # tooltip private info
+            iconw[1],               # icon widget
+            self.on_button_clicked, # a signal
+            self.tag_underline)     # tag underline
+        
+        iconw.append(gtk.Image())
+        iconw[2].set_from_file("img/italic.png")
+        self.tag_italic = self.textbuffer.create_tag("Italic",
+            style=pango.STYLE_ITALIC)
+        toolbar.append_item(
+            "Italic",               # button label
+            "Italic",               # this button's tooltip
+            "Private",              # tooltip private info
+            iconw[2],               # icon widget
+            self.on_button_clicked, # a signal
+            self.tag_italic)        # tag italic
+        
+        self.tag_found = self.textbuffer.create_tag("Found",
+            background="yellow")
         
         toolbar.append_space() # space after item
         
@@ -176,9 +181,9 @@ class PGapMain:
                 self.tvcolumn[i].set_visible(itm.get_active())
             
     def onTestClk(self, button):
-        self.on_button_clicked(self.tag_bold)
+        pass
     
-    def on_button_clicked(self, tag):
+    def on_button_clicked(self, button, tag):
         bounds = self.textbuffer.get_selection_bounds()
         if len(bounds) != 0:
             start, end = bounds
