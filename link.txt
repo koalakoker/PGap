@@ -1,0 +1,2 @@
+http://python-gtk-3-tutorial.readthedocs.org/en/latest/textview.html
+http://faq.pygtk.org/index.py?query=clipboard&querytype=simple&req=search

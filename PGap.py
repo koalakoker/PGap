@@ -9,6 +9,7 @@ pygtk.require('2.0')
 import gtk
 import gobject
 import datetime
+import pango
 
 class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
@@ -51,7 +52,7 @@ class PGapMain:
     def delete_event(self, widget, event, data=None):
         gtk.main_quit()
         return False
-
+    
     def __init__(self):
         self.gladefile = "pgapgui.glade"  
         self.builder = gtk.Builder()
@@ -108,6 +109,65 @@ class PGapMain:
         
         #update column view accordind glade file
         self.updateColumnView(None)
+        
+        self.textbuffer = self.builder.get_object("textbuffer")
+        self.tag_bold = self.textbuffer.create_tag("bold",
+            weight=pango.WEIGHT_BOLD)
+        self.tag_italic = self.textbuffer.create_tag("italic",
+            style=pango.STYLE_ITALIC)
+        self.tag_underline = self.textbuffer.create_tag("underline",
+            underline=pango.UNDERLINE_SINGLE)
+        self.tag_found = self.textbuffer.create_tag("found",
+            background="yellow")
+        
+        # to make it nice we'll put the toolbar into the handle box, 
+        # so that it can be detached from the main window
+        handlebox = gtk.HandleBox()
+        self.vbox = self.builder.get_object("vbox")
+        self.vbox.pack_start(handlebox, False, False, 0)
+        self.vbox.reorder_child(handlebox,0)
+
+        # toolbar will be horizontal, with both icons and text, and
+        # with 5pxl spaces between items and finally, 
+        # we'll also put it into our handlebox
+        toolbar = gtk.Toolbar()
+        toolbar.set_orientation(gtk.ORIENTATION_HORIZONTAL)
+        toolbar.set_style(gtk.TOOLBAR_ICONS)
+        toolbar.set_border_width(0)
+        handlebox.add(toolbar)
+
+        iconw = gtk.Image()
+        iconw.set_from_file("img/bold.png")
+        button_bold = toolbar.append_item(
+            "Bold",           # button label
+            "Bold", # this button's tooltip
+            "Private",         # tooltip private info
+            iconw,             # icon widget
+            self.onTestClk)    # a signal
+        
+        iconw2 = gtk.Image()
+        iconw2.set_from_file("img/underline.png")
+        button_undeline = toolbar.append_item(
+            "Undeline",           # button label
+            "Undeline", # this button's tooltip
+            "Private",         # tooltip private info
+            iconw2,             # icon widget
+            self.onTestClk)    # a signal
+        
+        iconw3 = gtk.Image()
+        iconw3.set_from_file("img/italic.png")
+        button_undeline = toolbar.append_item(
+            "Italic",           # button label
+            "Italic", # this button's tooltip
+            "Private",         # tooltip private info
+            iconw3,             # icon widget
+            self.onTestClk)    # a signal
+        
+        toolbar.append_space() # space after item
+        
+        # that's it ! let's show everything.
+        toolbar.show()
+        handlebox.show()
                 
     def updateColumnView(self, CheckMenuItem):
         for i in range(len(self.columnInfo)):
@@ -116,7 +176,13 @@ class PGapMain:
                 self.tvcolumn[i].set_visible(itm.get_active())
             
     def onTestClk(self, button):
-        pass
+        self.on_button_clicked(self.tag_bold)
+    
+    def on_button_clicked(self, tag):
+        bounds = self.textbuffer.get_selection_bounds()
+        if len(bounds) != 0:
+            start, end = bounds
+            self.textbuffer.apply_tag(tag, start, end)
     
 if __name__ == '__main__':
     main = PGapMain()
