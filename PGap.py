@@ -50,7 +50,7 @@ class PGapMain:
         return pos
 
     # close the window and quit
-    def delete_event(self, widget, event, data=None):
+    def delete_event(self, widget=None, event=None, data=None):
         gtk.main_quit()
         return False
     
@@ -114,6 +114,7 @@ class PGapMain:
         self.updateColumnView(None)
         
         self.textbuffer = self.builder.get_object("textbuffer")
+        self.textview = self.builder.get_object("textview")
         
         # to make it nice we'll put the toolbar into the handle box, 
         # so that it can be detached from the main window
@@ -194,6 +195,14 @@ class PGapMain:
     def onTestClk(self, button):
         pass
     
+    def onKeyEsc(self):
+        bounds = self.textbuffer.get_selection_bounds()
+        if len(bounds) != 0:
+            tb = self.textbuffer
+            tb.select_range(tb.get_end_iter(),tb.get_end_iter())
+        else:
+            self.delete_event()
+    
     def onKeyRelease(self, widget, event):
         keyPressName = gdk.keyval_name(event.keyval)
         if ((keyPressName == "Control_L") or (keyPressName == "Control_R")):
@@ -212,7 +221,9 @@ class PGapMain:
         
         if ((keyPressName == "Control_L") or (keyPressName == "Control_R")):
             self.keyCtrlPressed = True
-        
+            
+        if (keyPressName == "Escape"):
+            self.onKeyEsc()
 #         print (gtk.gdk.keyval_name(event.keyval))
     
 if __name__ == '__main__':
