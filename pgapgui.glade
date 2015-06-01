@@ -251,6 +251,8 @@
                         <property name="left_margin">5</property>
                         <property name="right_margin">5</property>
                         <property name="buffer">textbuffer</property>
+                        <signal name="key-release-event" handler="keyrelease" swapped="no"/>
+                        <signal name="key-press-event" handler="keypress" swapped="no"/>
                       </object>
                     </child>
                   </object>

@@ -7,6 +7,7 @@ Created on 30/mag/2015
 import pygtk
 pygtk.require('2.0')
 import gtk
+from gtk import gdk
 import gobject
 import datetime
 import pango
@@ -68,7 +69,9 @@ class PGapMain:
                      "onTestClk": self.onTestClk,
                      "on_ID_toggled": self.updateColumnView,
                      "on_Last modify_toggled": self.updateColumnView,
-                     "on_Creation Time_toggled": self.updateColumnView
+                     "on_Creation Time_toggled": self.updateColumnView,
+                     "keypress": self.onKeyPress,
+                     "keyrelease": self.onKeyRelease
                    }
         self.builder.connect_signals(handlers)
 
@@ -173,21 +176,44 @@ class PGapMain:
         # that's it ! let's show everything.
         toolbar.show()
         handlebox.show()
+        
+        self.keyCtrlPressed = False
                 
     def updateColumnView(self, CheckMenuItem):
         for i in range(len(self.columnInfo)):
             itm = self.builder.get_object(self.columnInfo[i])
             if (itm != None):
                 self.tvcolumn[i].set_visible(itm.get_active())
-            
-    def onTestClk(self, button):
-        pass
-    
+                
     def on_button_clicked(self, button, tag):
         bounds = self.textbuffer.get_selection_bounds()
         if len(bounds) != 0:
             start, end = bounds
             self.textbuffer.apply_tag(tag, start, end)
+            
+    def onTestClk(self, button):
+        pass
+    
+    def onKeyRelease(self, widget, event):
+        keyPressName = gdk.keyval_name(event.keyval)
+        if ((keyPressName == "Control_L") or (keyPressName == "Control_R")):
+            self.keyCtrlPressed = False
+    
+    def onKeyPress(self, widget, event):
+        keyPressName = gdk.keyval_name(event.keyval)
+        
+        if (self.keyCtrlPressed):
+            if (keyPressName == "b"):
+                self.on_button_clicked(None, self.tag_bold)
+            if (keyPressName == "i"):
+                self.on_button_clicked(None, self.tag_italic)
+            if (keyPressName == "u"):
+                self.on_button_clicked(None, self.tag_underline)    
+        
+        if ((keyPressName == "Control_L") or (keyPressName == "Control_R")):
+            self.keyCtrlPressed = True
+        
+#         print (gtk.gdk.keyval_name(event.keyval))
     
 if __name__ == '__main__':
     main = PGapMain()
