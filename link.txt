@@ -4,3 +4,6 @@ https://bitbucket.org/tiax/gtk-textbuffer-with-undo/
 
 
 get_tags(get_iter_at_mark(get_insert()))
+forward_to_tag_toggle(tag)
+
+http://stackoverflow.com/questions/30293229/get-text-from-gtk3-textview-textbuffer-with-formatting-tags-included-in-python
