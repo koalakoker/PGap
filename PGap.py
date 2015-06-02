@@ -12,6 +12,7 @@ import gobject
 import datetime
 import pango
 from undobufferrich import undobufferrich
+import TextBuffer2HTMLConvert
 
 initText = """Welcome to OGapp!
 
@@ -240,7 +241,7 @@ class PGapMain:
 #         print (gtk.gdk.keyval_name(event.keyval))
     
     def onTestClk(self, button):
-        pass
+        TextBuffer2HTMLConvert.toHTML(self.textbuffer)
     
 if __name__ == '__main__':
     main = PGapMain()
