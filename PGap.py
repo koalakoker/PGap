@@ -11,7 +11,15 @@ from gtk import gdk
 import gobject
 import datetime
 import pango
-import undobuffer
+from undobufferrich import undobufferrich
+
+initText = """Welcome to OGapp!
+
+OGapp is a slim sized and fast program to manage your textual notes. Notes are organized in pages and it is possible to setup a main password to get the access to the notes. When the notes are password protected the .ogp file in which the notes are stored will be encrypted.
+OGapp is cross platform and is available for Windows, Linux and (maybe in the future) Mac. It is based on Qt4 and is written in C++.
+
+This software is OPEN SOURCE and released under GPL license so you can feel FREE to use, copy, share, (but above all) to study, analyze and modify it as you like (within the terms of the license).
+If you like, hate or simply use this software, if you find any bug or have any request, please do not hesitate to let me know through the services offered by the site that hosts the project or through my Facebook page (http://facebook.com/koalakoker ). And (if you think it's the case) do not hesitate to recommend the program to your friends."""
 
 class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
@@ -115,14 +123,7 @@ class PGapMain:
         self.updateColumnView(None)
         
         #self.textbuffer = self.builder.get_object("textbuffer")
-        self.textbuffer = undobuffer.UndoableBuffer()
-        self.textbuffer.set_text("""Welcome to OGapp!
-
-OGapp is a slim sized and fast program to manage your textual notes. Notes are organized in pages and it is possible to setup a main password to get the access to the notes. When the notes are password protected the .ogp file in which the notes are stored will be encrypted.
-OGapp is cross platform and is available for Windows, Linux and (maybe in the future) Mac. It is based on Qt4 and is written in C++.
-
-This software is OPEN SOURCE and released under GPL license so you can feel FREE to use, copy, share, (but above all) to study, analyze and modify it as you like (within the terms of the license).
-If you like, hate or simply use this software, if you find any bug or have any request, please do not hesitate to let me know through the services offered by the site that hosts the project or through my Facebook page (http://facebook.com/koalakoker ). And (if you think it's the case) do not hesitate to recommend the program to your friends.""")
+        self.textbuffer = undobufferrich(initText)
         self.textview = self.builder.get_object("textview")
         self.textview.set_buffer(self.textbuffer)
         
@@ -200,7 +201,7 @@ If you like, hate or simply use this software, if you find any bug or have any r
         bounds = self.textbuffer.get_selection_bounds()
         if len(bounds) != 0:
             start, end = bounds
-            self.textbuffer.apply_tag(tag, start, end) #Toggle TAG!!!
+            self.textbuffer.toggleTag(tag, start, end)
     
     def onKeyEsc(self):
         bounds = self.textbuffer.get_selection_bounds()
