@@ -11,6 +11,7 @@ from gtk import gdk
 import gobject
 import datetime
 import pango
+import undobuffer
 
 class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
@@ -113,8 +114,17 @@ class PGapMain:
         #update column view accordind glade file
         self.updateColumnView(None)
         
-        self.textbuffer = self.builder.get_object("textbuffer")
+        #self.textbuffer = self.builder.get_object("textbuffer")
+        self.textbuffer = undobuffer.UndoableBuffer()
+        self.textbuffer.set_text("""Welcome to OGapp!
+
+OGapp is a slim sized and fast program to manage your textual notes. Notes are organized in pages and it is possible to setup a main password to get the access to the notes. When the notes are password protected the .ogp file in which the notes are stored will be encrypted.
+OGapp is cross platform and is available for Windows, Linux and (maybe in the future) Mac. It is based on Qt4 and is written in C++.
+
+This software is OPEN SOURCE and released under GPL license so you can feel FREE to use, copy, share, (but above all) to study, analyze and modify it as you like (within the terms of the license).
+If you like, hate or simply use this software, if you find any bug or have any request, please do not hesitate to let me know through the services offered by the site that hosts the project or through my Facebook page (http://facebook.com/koalakoker ). And (if you think it's the case) do not hesitate to recommend the program to your friends.""")
         self.textview = self.builder.get_object("textview")
+        self.textview.set_buffer(self.textbuffer)
         
         # to make it nice we'll put the toolbar into the handle box, 
         # so that it can be detached from the main window
@@ -141,7 +151,7 @@ class PGapMain:
             "Bold",                 # this button's tooltip
             "Private",              # tooltip private info
             iconw[0],               # icon widget
-            self.on_button_clicked, # a signal
+            self.on_BIU_button_clicked, # a signal
             self.tag_bold)          # tag bold
         
         
@@ -154,7 +164,7 @@ class PGapMain:
             "Underline",            # this button's tooltip
             "Private",              # tooltip private info
             iconw[1],               # icon widget
-            self.on_button_clicked, # a signal
+            self.on_BIU_button_clicked, # a signal
             self.tag_underline)     # tag underline
         
         iconw.append(gtk.Image())
@@ -166,7 +176,7 @@ class PGapMain:
             "Italic",               # this button's tooltip
             "Private",              # tooltip private info
             iconw[2],               # icon widget
-            self.on_button_clicked, # a signal
+            self.on_BIU_button_clicked, # a signal
             self.tag_italic)        # tag italic
         
         self.tag_found = self.textbuffer.create_tag("Found",
@@ -186,14 +196,11 @@ class PGapMain:
             if (itm != None):
                 self.tvcolumn[i].set_visible(itm.get_active())
                 
-    def on_button_clicked(self, button, tag):
+    def on_BIU_button_clicked(self, button, tag):
         bounds = self.textbuffer.get_selection_bounds()
         if len(bounds) != 0:
             start, end = bounds
-            self.textbuffer.apply_tag(tag, start, end)
-            
-    def onTestClk(self, button):
-        pass
+            self.textbuffer.apply_tag(tag, start, end) #Toggle TAG!!!
     
     def onKeyEsc(self):
         bounds = self.textbuffer.get_selection_bounds()
@@ -205,6 +212,7 @@ class PGapMain:
     
     def onKeyRelease(self, widget, event):
         keyPressName = gdk.keyval_name(event.keyval)
+        
         if ((keyPressName == "Control_L") or (keyPressName == "Control_R")):
             self.keyCtrlPressed = False
     
@@ -213,11 +221,15 @@ class PGapMain:
         
         if (self.keyCtrlPressed):
             if (keyPressName == "b"):
-                self.on_button_clicked(None, self.tag_bold)
+                self.on_BIU_button_clicked(None, self.tag_bold)
             if (keyPressName == "i"):
-                self.on_button_clicked(None, self.tag_italic)
+                self.on_BIU_button_clicked(None, self.tag_italic)
             if (keyPressName == "u"):
-                self.on_button_clicked(None, self.tag_underline)    
+                self.on_BIU_button_clicked(None, self.tag_underline)
+            if (keyPressName == "z"):
+                self.textbuffer.undo()
+            if ((keyPressName == "y") or (keyPressName == "Z")):
+                self.textbuffer.redo()
         
         if ((keyPressName == "Control_L") or (keyPressName == "Control_R")):
             self.keyCtrlPressed = True
@@ -225,6 +237,9 @@ class PGapMain:
         if (keyPressName == "Escape"):
             self.onKeyEsc()
 #         print (gtk.gdk.keyval_name(event.keyval))
+    
+    def onTestClk(self, button):
+        pass
     
 if __name__ == '__main__':
     main = PGapMain()
