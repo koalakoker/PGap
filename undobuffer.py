@@ -33,7 +33,7 @@ class UndoableInsert(object):
             self.mergeable = True
 
 class UndoableDelete(object):
-    """something that has ben deleted from our textbuffer"""
+    """something that has been deleted from our textbuffer"""
     def __init__(self, text_buffer, start_iter, end_iter):
         self.text = text_buffer.get_text(start_iter, end_iter)
         self.start = start_iter.get_offset()
@@ -49,6 +49,15 @@ class UndoableDelete(object):
             self.mergeable = False
         else:
             self.mergeable = True
+            
+class UndoableApplyTag(object):
+    """setting Tag"""
+    def __init__(self, text_buffer, tag, start_iter, end_iter, applyTag):
+        self.tag = tag
+        self.start = start_iter.get_offset()
+        self.end = end_iter.get_offset()
+        self.applyTag = applyTag
+        self.mergeable = False
 
 class UndoableBuffer(gtk.TextBuffer):
     """text buffer with added undo capabilities
@@ -67,6 +76,8 @@ class UndoableBuffer(gtk.TextBuffer):
         self.undo_in_progress = False
         self.connect('insert-text', self.on_insert_text)
         self.connect('delete-range', self.on_delete_range)
+        self.connect('apply-tag', self.on_apply_tag, True)
+        self.connect('remove-tag', self.on_apply_tag, False)
 
     @property
     def can_undo(self):
@@ -167,6 +178,14 @@ class UndoableBuffer(gtk.TextBuffer):
         else:
             self.undo_stack.append(prev_delete)
             self.undo_stack.append(undo_action)
+            
+    def on_apply_tag(self, textbuffer, texttag, start, end, applyTag):
+        if not self.undo_in_progress:
+            self.redo_stack = []
+        if self.not_undoable_action:
+            return
+        undo_action = UndoableApplyTag(textbuffer, texttag, start, end, applyTag)
+        self.undo_stack.append(undo_action)
 
     def begin_not_undoable_action(self):
         """don't record the next actions
@@ -197,7 +216,7 @@ class UndoableBuffer(gtk.TextBuffer):
             )
             self.delete(start, stop)
             self.place_cursor(start)
-        else:
+        elif isinstance(undo_action, UndoableDelete):
             start = self.get_iter_at_offset(undo_action.start)
             self.insert(start, undo_action.text)
             stop = self.get_iter_at_offset(undo_action.end)
@@ -205,6 +224,13 @@ class UndoableBuffer(gtk.TextBuffer):
                 self.place_cursor(start)
             else:
                 self.place_cursor(stop)
+        elif isinstance(undo_action, UndoableApplyTag):
+            start = self.get_iter_at_offset(undo_action.start)
+            end = self.get_iter_at_offset(undo_action.end)
+            if (undo_action.applyTag):
+                self.remove_tag(undo_action.tag, start, end)
+            else:
+                self.apply_tag(undo_action.tag, start, end)
         self.end_not_undoable_action()
         self.undo_in_progress = False
 
@@ -225,10 +251,17 @@ class UndoableBuffer(gtk.TextBuffer):
                 redo_action.offset + redo_action.length
             )
             self.place_cursor(new_cursor_pos)
-        else:
+        elif isinstance(redo_action, UndoableDelete):
             start = self.get_iter_at_offset(redo_action.start)
             stop = self.get_iter_at_offset(redo_action.end)
             self.delete(start, stop)
             self.place_cursor(start)
+        elif isinstance(redo_action, UndoableApplyTag):
+            start = self.get_iter_at_offset(redo_action.start)
+            end = self.get_iter_at_offset(redo_action.end)
+            if (redo_action.applyTag):
+                self.apply_tag(redo_action.tag, start, end)
+            else:
+                self.remove_tag(redo_action.tag, start, end)
         self.end_not_undoable_action()
         self.undo_in_progress = False
