@@ -241,7 +241,8 @@ class PGapMain:
 #         print (gtk.gdk.keyval_name(event.keyval))
     
     def onTestClk(self, button):
-        TextBuffer2HTMLConvert.toHTML(self.textbuffer)
+#         TextBuffer2HTMLConvert.toHTML(self.textbuffer)
+        TextBuffer2HTMLConvert.serialize(self.textbuffer)
     
 if __name__ == '__main__':
     main = PGapMain()
