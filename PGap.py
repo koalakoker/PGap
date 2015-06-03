@@ -26,7 +26,7 @@ class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
     
     def __init__(self):
-        gtk.TreeStore.__init__(self, gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING)
+        gtk.TreeStore.__init__(self, gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING, gobject.TYPE_STRING, gtk.TextBuffer)
         #init treestore with the following types
         # 0: String - Title of the note
         # 1: Int - ID of the note (unique ID inside the db)
@@ -37,11 +37,14 @@ class NoteModel(gtk.TreeStore):
     def populate(self):
         for parent in range(4):
             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, ""))
+            it = ""
+            if (parent == 0):
+                it = initText
+            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, undobufferrich(it)))
             self.newPageID += 1
             for child in range(3):
                 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, ""))
+                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, undobufferrich("")))
                 self.newPageID += 1
 
 class PGapMain:
@@ -81,14 +84,15 @@ class PGapMain:
                      "on_Last modify_toggled": self.updateColumnView,
                      "on_Creation Time_toggled": self.updateColumnView,
                      "keypress": self.onKeyPress,
-                     "keyrelease": self.onKeyRelease
+                     "keyrelease": self.onKeyRelease,
+                     "onCursorChanged": self.onNoteSelectionChange
                    }
         self.builder.connect_signals(handlers)
 
         # create a TreeStore with one string showColumn to use as the model
         self.NoteStore = NoteModel()
         #Populate
-        self.NoteStore.populate()
+        #self.NoteStore.populate()
 
         # create the TreeView using NoteStore
         self.treeview =  self.builder.get_object("treeview")
@@ -123,10 +127,8 @@ class PGapMain:
         #update column view accordind glade file
         self.updateColumnView(None)
         
-        #self.textbuffer = self.builder.get_object("textbuffer")
-        self.textbuffer = undobufferrich(initText)
         self.textview = self.builder.get_object("textview")
-        self.textview.set_buffer(self.textbuffer)
+        self.onNoteSelectionChange(self.treeview)
         
         # to make it nice we'll put the toolbar into the handle box, 
         # so that it can be detached from the main window
@@ -239,10 +241,20 @@ class PGapMain:
         if (keyPressName == "Escape"):
             self.onKeyEsc()
 #         print (gtk.gdk.keyval_name(event.keyval))
+
+    def onNoteSelectionChange(self, treeView):
+        itersel = treeView.get_selection().get_selected()[1]
+        if (itersel == None):
+            itersel = self.NoteStore.get_iter_root()
+        if (itersel != None):
+            self.textbuffer = self.NoteStore.get_value(itersel, 4) # Mergiare con l'on-change
+            self.textview.set_buffer(self.textbuffer)
     
     def onTestClk(self, button):
 #         TextBuffer2HTMLConvert.toHTML(self.textbuffer)
-        TextBuffer2HTMLConvert.serialize(self.textbuffer)
+#         TextBuffer2HTMLConvert.serialize(self.textbuffer)
+        diag = gtk.MessageDialog()
+        diag.show()
     
 if __name__ == '__main__':
     main = PGapMain()
