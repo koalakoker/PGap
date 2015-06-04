@@ -11,15 +11,15 @@ class undobufferrich(undobuffer.UndoableBuffer):
     Extends Undoable buffer with formatting
     '''
 
-    def __init__(self, text):
+    def __init__(self, text, tagTable = None):
         '''
         Constructor
         '''
-        undobuffer.UndoableBuffer.__init__(self)
+        undobuffer.UndoableBuffer.__init__(self, tagTable)
         self.begin_not_undoable_action()
         self.set_text(text)
         self.end_not_undoable_action()
-        
+                
     def isBlockTagged(self, tag, start, end):
         # return True if all char in the buffer from start to end is tagged with tag, else False
         retVal = True

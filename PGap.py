@@ -10,9 +10,9 @@ import gtk
 from gtk import gdk
 import gobject
 import datetime
-import pango
 from undobufferrich import undobufferrich
 import TextBuffer2HTMLConvert
+import pango
 
 initText = """Welcome to OGapp!
 
@@ -25,7 +25,7 @@ If you like, hate or simply use this software, if you find any bug or have any r
 class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
     
-    def __init__(self):
+    def __init__(self, tagTable = None):
         gtk.TreeStore.__init__(self, gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING, gobject.TYPE_STRING, gtk.TextBuffer)
         #init treestore with the following types
         # 0: String - Title of the note
@@ -33,6 +33,7 @@ class NoteModel(gtk.TreeStore):
         # 2: String - Time stamp (Creation)
         # 3: String - Time stamp (Last modification) 
         # 4: String - Testo nota
+        self.tagTable = tagTable
         
     def populate(self):
         for parent in range(4):
@@ -40,11 +41,11 @@ class NoteModel(gtk.TreeStore):
             it = ""
             if (parent == 0):
                 it = initText
-            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, undobufferrich(it)))
+            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, undobufferrich(it, self.tagTable)))
             self.newPageID += 1
             for child in range(3):
                 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, undobufferrich("")))
+                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, undobufferrich("", self.tagTable)))
                 self.newPageID += 1
 
 class PGapMain:
@@ -88,11 +89,23 @@ class PGapMain:
                      "onCursorChanged": self.onNoteSelectionChange
                    }
         self.builder.connect_signals(handlers)
+        
+        #create tagTable
+        self.tagTable = gtk.TextTagTable()
+        self.tag_bold = gtk.TextTag("Bold")
+        self.tag_bold.set_property("weight", pango.WEIGHT_BOLD)
+        self.tagTable.add(self.tag_bold)
+        self.tag_underline = gtk.TextTag("Underline")
+        self.tag_underline.set_property("underline", pango.UNDERLINE_SINGLE)
+        self.tagTable.add(self.tag_underline)
+        self.tag_italic = gtk.TextTag("Italic")
+        self.tag_italic.set_property("style", pango.STYLE_ITALIC)
+        self.tagTable.add(self.tag_italic)
 
         # create a TreeStore with one string showColumn to use as the model
-        self.NoteStore = NoteModel()
+        self.NoteStore = NoteModel(self.tagTable)
         #Populate
-        #self.NoteStore.populate()
+#         self.NoteStore.populate()
 
         # create the TreeView using NoteStore
         self.treeview =  self.builder.get_object("treeview")
@@ -144,12 +157,10 @@ class PGapMain:
         toolbar.set_style(gtk.TOOLBAR_ICONS)
         toolbar.set_border_width(0)
         handlebox.add(toolbar)
-
+        
         iconw = []
         iconw.append(gtk.Image())
         iconw[0].set_from_file("img/bold.png")
-        self.tag_bold = self.textbuffer.create_tag("Bold",
-            weight=pango.WEIGHT_BOLD)
         toolbar.append_item(
             "Bold",                 # button label
             "Bold",                 # this button's tooltip
@@ -161,8 +172,6 @@ class PGapMain:
         
         iconw.append(gtk.Image())
         iconw[1].set_from_file("img/underline.png")
-        self.tag_underline = self.textbuffer.create_tag("Underline",
-            underline=pango.UNDERLINE_SINGLE)
         toolbar.append_item(
             "Underline",            # button label
             "Underline",            # this button's tooltip
@@ -173,8 +182,6 @@ class PGapMain:
         
         iconw.append(gtk.Image())
         iconw[2].set_from_file("img/italic.png")
-        self.tag_italic = self.textbuffer.create_tag("Italic",
-            style=pango.STYLE_ITALIC)
         toolbar.append_item(
             "Italic",               # button label
             "Italic",               # this button's tooltip
@@ -183,8 +190,8 @@ class PGapMain:
             self.on_BIU_button_clicked, # a signal
             self.tag_italic)        # tag italic
         
-        self.tag_found = self.textbuffer.create_tag("Found",
-            background="yellow")
+#         self.tag_found = self.textbuffer.create_tag("Found",
+#             background="yellow")
         
         toolbar.append_space() # space after item
         
@@ -249,10 +256,13 @@ class PGapMain:
         if (itersel != None):
             self.textbuffer = self.NoteStore.get_value(itersel, 4) # Mergiare con l'on-change
             self.textview.set_buffer(self.textbuffer)
-    
+            self.textview.set_sensitive(True)
+        else:
+            self.textview.set_sensitive(False)
     def onTestClk(self, button):
 #         TextBuffer2HTMLConvert.toHTML(self.textbuffer)
 #         TextBuffer2HTMLConvert.serialize(self.textbuffer)
+        self.NoteStore.populate()
         diag = gtk.MessageDialog()
         diag.show()
     
