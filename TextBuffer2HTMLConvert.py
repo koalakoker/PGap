@@ -73,3 +73,19 @@ def serialize(textBuffer, start = None, end = None):
     out_file.close()
     
     return exported
+
+def formatting(textBuffer, start = None, end = None):
+    if (start == None):
+        start = textBuffer.get_start_iter()
+    if (end == None):
+        end = textBuffer.get_end_iter()
+        
+    exported = start.get_text(end)
+    exported = exported.replace('<br>', os.linesep)
+    exported = exported.replace('<i>', '"')
+    exported = exported.replace('</i>', '"')
+    exported = exported.replace('&#33;', '!')
+    
+    out_file = open("converted","w")
+    out_file.write(exported)
+    out_file.close()
