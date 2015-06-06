@@ -30,6 +30,11 @@ class NoteModel(gtk.TreeStore):
         # 4: String - Testo nota
         self.tagTable = tagTable
         
+        self.connect("row-changed", self.callback)
+         
+    def callback(self, treemodel, path, piter):
+        print ("Changed!")
+        
     def populate(self):
         for parent in range(4):
             now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
