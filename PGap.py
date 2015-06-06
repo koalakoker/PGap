@@ -106,6 +106,12 @@ class PGapMain:
         #update column view accordind glade file
         self.updateColumnView(None)
         
+        #Make first column of TreeView editable (Note name)
+        col = self.treeview.get_column(0)
+        renderer = col.get_cell_renderers()[0]
+        renderer.set_property('editable', True)
+        renderer.connect('edited', self.cell_edited_callback)
+        
         self.textview = self.builder.get_object("textview")
         self.onNoteSelectionChange(self.treeview)
                 
@@ -204,16 +210,13 @@ class PGapMain:
 #         TextBuffer2HTMLConvert.toHTML(self.textbuffer)
 #         TextBuffer2HTMLConvert.serialize(self.textbuffer)
 #         self.NoteStore.populate()
-        renderer = gtk.CellRendererText()
-        renderer.connect('edited', self.cell_edited_callback)
-        renderer.set_property('editable', True)
-        col = self.treeview.get_column(0)
-        col.set_attributes(renderer, text = 0)
-#         self.treeview.insert_column_with_attributes(-1, 'Editable String', renderer, text=0)
-        
-    def cell_edited_callback(self):
         diag = gtk.MessageDialog()
         diag.show()
+        
+    def cell_edited_callback(self, cellrenderertext, path, new_text):
+        print (cellrenderertext, path, new_text)
+        piter = self.NoteStore.get_iter(path)
+        self.NoteStore.set_value(piter, 0, new_text)
         
 if __name__ == '__main__':
     main = PGapMain()
