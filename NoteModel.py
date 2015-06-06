@@ -43,6 +43,14 @@ class NoteModel(gtk.TreeStore):
                 self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, undobufferrich("", self.tagTable)))
                 self.newPageID += 1
                 
+    def addNewNote(self, node = None):
+        # return the iter to the new node
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        piter = self.append(node, ('new note %i' % self.newPageID , self.newPageID, now, now, undobufferrich('', self.tagTable)))
+        self.newPageID += 1
+        return piter
+        
 if __name__ == '__main__':
     note = NoteModel()
     note.populate()
+    note.addNewNote()

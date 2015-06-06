@@ -50,7 +50,9 @@ class PGapMain:
                      "on_Creation Time_toggled": self.updateColumnView,
                      "keypress": self.onKeyPress,
                      "keyrelease": self.onKeyRelease,
-                     "onCursorChanged": self.onNoteSelectionChange
+                     "onCursorChanged": self.onNoteSelectionChange,
+                     "onNewNote": self.onNewNote,
+                     "on_BIU_button_clicked": self.on_BIU_button_clicked
                    }
         self.builder.connect_signals(handlers)
         
@@ -65,7 +67,7 @@ class PGapMain:
         self.tag_italic = gtk.TextTag("Italic")
         self.tag_italic.set_property("style", pango.STYLE_ITALIC)
         self.tagTable.add(self.tag_italic)
-
+        
         # create a TreeStore with one string showColumn to use as the model
         self.NoteStore = NoteModel(self.tagTable)
         #Populate
@@ -106,63 +108,7 @@ class PGapMain:
         
         self.textview = self.builder.get_object("textview")
         self.onNoteSelectionChange(self.treeview)
-        
-        # to make it nice we'll put the toolbar into the handle box, 
-        # so that it can be detached from the main window
-        handlebox = gtk.HandleBox()
-        self.vbox = self.builder.get_object("vbox")
-        self.vbox.pack_start(handlebox, False, False, 0)
-        self.vbox.reorder_child(handlebox,0)
-
-        # toolbar will be horizontal, with icons and finally, 
-        # we'll also put it into our handlebox
-        toolbar = gtk.Toolbar()
-        toolbar.set_orientation(gtk.ORIENTATION_HORIZONTAL)
-        toolbar.set_style(gtk.TOOLBAR_ICONS)
-        toolbar.set_border_width(0)
-        handlebox.add(toolbar)
-        
-        iconw = []
-        iconw.append(gtk.Image())
-        iconw[0].set_from_file("img/bold.png")
-        toolbar.append_item(
-            "Bold",                 # button label
-            "Bold",                 # this button's tooltip
-            "Private",              # tooltip private info
-            iconw[0],               # icon widget
-            self.on_BIU_button_clicked, # a signal
-            self.tag_bold)          # tag bold
-        
-        
-        iconw.append(gtk.Image())
-        iconw[1].set_from_file("img/underline.png")
-        toolbar.append_item(
-            "Underline",            # button label
-            "Underline",            # this button's tooltip
-            "Private",              # tooltip private info
-            iconw[1],               # icon widget
-            self.on_BIU_button_clicked, # a signal
-            self.tag_underline)     # tag underline
-        
-        iconw.append(gtk.Image())
-        iconw[2].set_from_file("img/italic.png")
-        toolbar.append_item(
-            "Italic",               # button label
-            "Italic",               # this button's tooltip
-            "Private",              # tooltip private info
-            iconw[2],               # icon widget
-            self.on_BIU_button_clicked, # a signal
-            self.tag_italic)        # tag italic
-        
-#         self.tag_found = self.textbuffer.create_tag("Found",
-#             background="yellow")
-        
-        toolbar.append_space() # space after item
-        
-        # that's it ! let's show everything.
-        toolbar.show()
-        handlebox.show()
-        
+                
         self.keyCtrlPressed = False
                 
     def updateColumnView(self, CheckMenuItem):
@@ -171,11 +117,23 @@ class PGapMain:
             if (itm != None):
                 self.tvcolumn[i].set_visible(itm.get_active())
                 
-    def on_BIU_button_clicked(self, button, tag):
-        bounds = self.textbuffer.get_selection_bounds()
-        if len(bounds) != 0:
-            start, end = bounds
-            self.textbuffer.toggleTag(tag, start, end)
+    def on_BIU_button_clicked(self, button, tag = None):
+        if (tag == None):
+            # Select Tag from button clicked
+            # Note: Tag name must be set in the button label
+            tag = self.tagTable.lookup(button.get_label())
+            
+            try:
+                bounds = self.textbuffer.get_selection_bounds()
+                
+                if len(bounds) != 0:
+                    start, end = bounds
+                    self.textbuffer.toggleTag(tag, start, end)
+                    
+            except AttributeError:
+                pass
+        
+            
     
     def onKeyEsc(self):
         bounds = self.textbuffer.get_selection_bounds()
@@ -213,8 +171,16 @@ class PGapMain:
             self.onKeyEsc()
 #         print (gtk.gdk.keyval_name(event.keyval))
 
-    def onNoteSelectionChange(self, treeView):
-        itersel = treeView.get_selection().get_selected()[1]
+    def getNoteSelected(self):
+        # Returns the node of self.TreeView that is selected or None
+        itersel = None
+        treeView = self.treeview
+        if (treeView != None):
+            itersel = treeView.get_selection().get_selected()[1]
+        return itersel
+
+    def onNoteSelectionChange(self, treeView = None):
+        itersel = self.getNoteSelected()
         if (itersel == None):
             itersel = self.NoteStore.get_iter_root()
         if (itersel != None):
@@ -223,12 +189,23 @@ class PGapMain:
             self.textview.set_sensitive(True)
         else:
             self.textview.set_sensitive(False)
+            
+    def onNewNote(self, button = None):
+        # Create new node        
+        piter = self.NoteStore.addNewNote(self.getNoteSelected())
+        path = None
+        if (piter != None):
+            path = self.NoteStore.get_path(piter) 
+        if (path != None):
+            self.treeview.expand_to_path(path)
+            self.treeview.set_cursor(path)
+
     def onTestClk(self, button):
 #         TextBuffer2HTMLConvert.toHTML(self.textbuffer)
 #         TextBuffer2HTMLConvert.serialize(self.textbuffer)
-        self.NoteStore.populate()
-#         diag = gtk.MessageDialog()
-#         diag.show()
+#         self.NoteStore.populate()
+        diag = gtk.MessageDialog()
+        diag.show()
     
 if __name__ == '__main__':
     main = PGapMain()
