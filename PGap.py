@@ -213,7 +213,7 @@ class PGapMain:
         diag = gtk.MessageDialog()
         diag.show()
         
-    def cell_edited_callback(self, cellrenderertext, path, new_text):\
+    def cell_edited_callback(self, cellrenderertext, path, new_text):
         piter = self.NoteStore.get_iter(path)
         self.NoteStore.set_value(piter, 0, new_text)
         
