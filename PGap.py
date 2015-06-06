@@ -110,7 +110,7 @@ class PGapMain:
         self.onNoteSelectionChange(self.treeview)
                 
         self.keyCtrlPressed = False
-                
+                        
     def updateColumnView(self, CheckMenuItem):
         for i in range(len(self.columnInfo)):
             itm = self.builder.get_object(self.columnInfo[i])
@@ -184,7 +184,7 @@ class PGapMain:
         if (itersel == None):
             itersel = self.NoteStore.get_iter_root()
         if (itersel != None):
-            self.textbuffer = self.NoteStore.get_value(itersel, 4) # Mergiare con l'on-change
+            self.textbuffer = self.NoteStore.get_value(itersel, 4)
             self.textview.set_buffer(self.textbuffer)
             self.textview.set_sensitive(True)
         else:
@@ -204,9 +204,17 @@ class PGapMain:
 #         TextBuffer2HTMLConvert.toHTML(self.textbuffer)
 #         TextBuffer2HTMLConvert.serialize(self.textbuffer)
 #         self.NoteStore.populate()
+        renderer = gtk.CellRendererText()
+        renderer.connect('edited', self.cell_edited_callback)
+        renderer.set_property('editable', True)
+        col = self.treeview.get_column(0)
+        col.set_attributes(renderer, text = 0)
+#         self.treeview.insert_column_with_attributes(-1, 'Editable String', renderer, text=0)
+        
+    def cell_edited_callback(self):
         diag = gtk.MessageDialog()
         diag.show()
-    
+        
 if __name__ == '__main__':
     main = PGapMain()
     gtk.main()
