@@ -116,7 +116,10 @@ class PGapMain:
         self.onNoteSelectionChange(self.treeview)
                 
         self.keyCtrlPressed = False
-                        
+        
+        # Clipboard
+        self.clipboard = gtk.Clipboard()
+                                
     def updateColumnView(self, CheckMenuItem):
         for i in range(len(self.columnInfo)):
             itm = self.builder.get_object(self.columnInfo[i])
@@ -210,8 +213,18 @@ class PGapMain:
 #         TextBuffer2HTMLConvert.toHTML(self.textbuffer)
 #         TextBuffer2HTMLConvert.serialize(self.textbuffer)
 #         self.NoteStore.populate()
-        diag = gtk.MessageDialog()
-        diag.show()
+#             self.clipboard.request_text(self.callback)
+            self.appoTxt = gtk.TextBuffer()
+            self.clipboard.request_rich_text(self.appoTxt, self.callbackrich)
+#         diag = gtk.MessageDialog()
+#         diag.show()
+
+    def callbackrich(self, clipboard, clformat, text, length, data = None):
+        print ("Hey")
+#         print (self, clipboard, clformat, text, length, data)
+
+    def callback(self, clipboard, text, data = None):
+        print (text)
         
     def cell_edited_callback(self, cellrenderertext, path, new_text):
         piter = self.NoteStore.get_iter(path)
