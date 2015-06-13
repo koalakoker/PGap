@@ -5,40 +5,45 @@ Created on 01/giu/2015
 '''
 
 from xml.etree import ElementTree
-# from xml.dom import minidom
-# import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element
 
-# def prettify(elem):
-#     """Return a pretty-printed XML string for the Element.
-#     """
-#     rough_string = ElementTree.tostring(elem, 'utf-8')
-#     reparsed = minidom.parseString(rough_string)
-#     return reparsed.toprettyxml(indent="  ")
+ver = "1.0"
+defFilename = "test.xml"
 
+class XML():
+    
+    def __init__(self):
+        
+        self.root = Element('root')
+        attr = { "Version" : ver }
+        self.root.attrib = attr
+        
+    def addChild(self, name , text , node = None, attr = None):
+        child = Element(name)
+        if (attr != None):
+            child.attrib = attr
+        child.text = text
+        if (node == None):
+            self.root.append(child)
+        else:
+            self.node.append(child)
+        
+    def save(self, filename = defFilename):
+        tree = ElementTree.ElementTree(self.root)
+        tree.write(filename, encoding='utf-8', xml_declaration=True)
+        
+    def load(self, filename = defFilename):
+        tree = ElementTree.parse('country_data.xml')
+        self.root = tree.getroot()
+        
+    def visualize(self, node, indent = ""):
+        #print (indent + node.tag + node.attrib + node.text)
+        print (node.tag)
+        for child in node:
+            self.visualize(child, indent+"  ")
+      
 if __name__ == '__main__':
-
-#     tree = ET.parse('country_data.xml')
-#     root = tree.getroot()
-#      
-#     print root.tag, root.attrib
-#      
-#     for child in root:
-#         print child.tag, child.attrib
-#         for value in child:
-#             print value.tag, value.attrib, value.text
+    xml = XML()
+    xml.addChild("nota", "nota testo")
+    xml.visualize(xml.root)
     
-    root = Element('root')
-    attr = { "name" : "Gigi" }
-    root.attrib = attr
-    
-    child = Element('child')
-    child.text = "Pippino"
-    
-    root.append(child)
-    
-#     prettify(root)
-    
-    tree = ElementTree(root)
-    
-    tree.write("test.xml", encoding='utf-8', xml_declaration=True)
