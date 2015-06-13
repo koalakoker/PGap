@@ -4,6 +4,8 @@ Created on 05/giu/2015
 @author: koala
 '''
 
+import XML
+
 initText = """Welcome to OGapp!
 
 OGapp is a slim sized and fast program to manage your textual notes. Notes are organized in pages and it is possible to setup a main password to get the access to the notes. When the notes are password protected the .ogp file in which the notes are stored will be encrypted.
@@ -31,6 +33,9 @@ class NoteModel(gtk.TreeStore):
         self.tagTable = tagTable
         
         self.hnd = self.connect("row-changed", self.callback)
+        
+        #XML
+        self.xml = XML.XML()
          
     def callback(self, treemodel, path, piter):
         self.disconnect(self.hnd)
@@ -64,6 +69,17 @@ class NoteModel(gtk.TreeStore):
         self.hnd = self.connect("row-changed", self.callback)
         self.newPageID += 1
         return piter
+    
+    def save(self, filename = None):
+        self.xml.addChild("nota", "nota testo")
+        print ("Test save")
+        self.xml.visualize(self.xml.root)
+        self.xml.save(filename)
+        
+    def load(self, filename = None):
+        print ("Test load")
+        self.xml.load(filename)
+        self.xml.visualize(self.xml.root)
         
 if __name__ == '__main__':
     note = NoteModel()

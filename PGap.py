@@ -122,7 +122,7 @@ class PGapMain:
         
         # Clipboard
         self.clipboard = gtk.Clipboard()
-                                
+                                        
     def updateColumnView(self, CheckMenuItem):
         for i in range(len(self.columnInfo)):
             itm = self.builder.get_object(self.columnInfo[i])
@@ -234,13 +234,13 @@ class PGapMain:
         self.NoteStore.set_value(piter, 0, new_text)
         
     def onSave(self, menuItm):
-        print "Save"
+        self.NoteStore.save("test.xml")
     
     def onSaveAs(self, menuItm):
         print "Save As..."
     
     def onOpen(self, menuItm):
-        print "Open"
+        self.NoteStore.load("test.xml")
         
 if __name__ == '__main__':
     main = PGapMain()

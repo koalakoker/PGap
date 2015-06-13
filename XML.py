@@ -33,17 +33,25 @@ class XML():
         tree.write(filename, encoding='utf-8', xml_declaration=True)
         
     def load(self, filename = defFilename):
-        tree = ElementTree.parse('country_data.xml')
+        tree = ElementTree.parse(filename)
         self.root = tree.getroot()
         
     def visualize(self, node, indent = ""):
-        #print (indent + node.tag + node.attrib + node.text)
-        print (node.tag)
+        out = indent + node.tag
+        if (node.attrib != None):
+            out = out + " " + str(node.attrib)
+        if (node.text != None):
+            out = out + " " + node.text
+        print (out)
         for child in node:
-            self.visualize(child, indent+"  ")
+            self.visualize(child, indent+"--")
       
 if __name__ == '__main__':
     xml = XML()
     xml.addChild("nota", "nota testo")
+    print ("Test save")
     xml.visualize(xml.root)
-    
+    xml.save()
+    print ("Test load")
+    xml.load()
+    xml.visualize(xml.root)
