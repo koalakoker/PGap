@@ -52,7 +52,10 @@ class PGapMain:
                      "keyrelease": self.onKeyRelease,
                      "onCursorChanged": self.onNoteSelectionChange,
                      "onNewNote": self.onNewNote,
-                     "on_BIU_button_clicked": self.on_BIU_button_clicked
+                     "on_BIU_button_clicked": self.on_BIU_button_clicked,
+                     "onSave" : self.onSave,
+                     "onSaveAs" : self.onSaveAs,
+                     "onOpen" : self.onOpen
                    }
         self.builder.connect_signals(handlers)
         
@@ -229,6 +232,15 @@ class PGapMain:
     def cell_edited_callback(self, cellrenderertext, path, new_text):
         piter = self.NoteStore.get_iter(path)
         self.NoteStore.set_value(piter, 0, new_text)
+        
+    def onSave(self, menuItm):
+        print "Save"
+    
+    def onSaveAs(self, menuItm):
+        print "Save As..."
+    
+    def onOpen(self, menuItm):
+        print "Open"
         
 if __name__ == '__main__':
     main = PGapMain()
