@@ -5,6 +5,8 @@ Created on 05/giu/2015
 '''
 
 import XML
+import TextBuffer2HTMLConvert
+from TextBuffer2HTMLConvert import toHTML
 
 initText = """Welcome to OGapp!
 
@@ -18,6 +20,12 @@ import gtk
 import gobject
 import datetime
 from undobufferrich import undobufferrich
+
+COL_Title = 0
+COL_ID = 1
+COL_Creation = 2
+COL_Modify = 3
+COL_Text = 4
 
 class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
@@ -33,9 +41,6 @@ class NoteModel(gtk.TreeStore):
         self.tagTable = tagTable
         
         self.hnd = self.connect("row-changed", self.callback)
-        
-        #XML
-        self.xml = XML.XML()
          
     def callback(self, treemodel, path, piter):
         self.disconnect(self.hnd)
@@ -71,17 +76,35 @@ class NoteModel(gtk.TreeStore):
         return piter
     
     def save(self, filename = None):
-        self.xml.addChild("nota", "nota testo")
-        print ("Test save")
-        self.xml.visualize(self.xml.root)
-        self.xml.save(filename)
+        
+        def inserXMLEntry(piter, xml):
+            title = self.get_value(piter,COL_Title)
+            textNote = self.get_value(piter,COL_Text)
+#             text = toHTML(textNote)
+            text = TextBuffer2HTMLConvert.serialize(textNote)                       
+            xml.addChild(title, text)
+            if (self.iter_n_children(piter) != 0):
+                inserXMLEntry(self.iter_children(piter), xml)
+            piter = self.iter_next(piter)
+            if (piter != None):
+                inserXMLEntry(piter, xml)
+        
+        print ("Saving...")
+        xml = XML.XML()
+        
+        piter = self.get_iter_root()
+        inserXMLEntry(piter, xml)
+        xml.visualize(xml.root)
+        xml.save(filename)
         
     def load(self, filename = None):
-        print ("Test load")
-        self.xml.load(filename)
-        self.xml.visualize(self.xml.root)
+        print ("Loading...")
+        xml = XML.XML()
+        xml.load(filename)
+        xml.visualize(xml.root)
         
 if __name__ == '__main__':
     note = NoteModel()
     note.populate()
     note.addNewNote()
+    note.save("test.xml")

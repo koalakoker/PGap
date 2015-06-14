@@ -56,9 +56,10 @@ def toHTML(textBuffer, start = None, end = None):
 
 </html> """
     
-    out_file = open("out.html","w")
-    out_file.write(outStr)
-    out_file.close()
+#     out_file = open("out.html","w")
+#     out_file.write(outStr)
+#     out_file.close()
+    return outStr
     
 def serialize(textBuffer, start = None, end = None):
     if (start == None):
@@ -68,9 +69,9 @@ def serialize(textBuffer, start = None, end = None):
     myFormat = textBuffer.register_serialize_tagset('my-tagset')
     exported = textBuffer.serialize(textBuffer, myFormat, start, end)
     
-    out_file = open("serializeTB","w")
-    out_file.write(exported)
-    out_file.close()
+#     out_file = open("serializeTB","w")
+#     out_file.write(exported)
+#     out_file.close()
     
     return exported
 
