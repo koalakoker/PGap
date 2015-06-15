@@ -30,6 +30,9 @@ COL_Text = 4
 class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
     
+    XML_GTK_SERIALIZE = 0
+    XML_HTML = 1
+    
     def __init__(self, tagTable = None):
         gtk.TreeStore.__init__(self, gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING, gobject.TYPE_STRING, gtk.TextBuffer)
         #init treestore with the following types
@@ -77,16 +80,29 @@ class NoteModel(gtk.TreeStore):
     
     def save(self, filename = None):
         
-        def inserXMLEntry(piter, xml, parent = None):
+        def inserXMLEntry(piter, xml, parent = None, mode = self.XML_GTK_SERIALIZE):
+            
+            #Text
+            if (mode == self.XML_GTK_SERIALIZE):
+                textNote = self.get_value(piter, COL_Text)
+                text = TextBuffer2HTMLConvert.serialize(textNote)
+            elif (mode == self.XML_HTML):
+                textNote = self.get_value(piter, COL_Text)
+                text = toHTML(textNote)
+            else:
+                return
+            
+            #Attributes
             title = self.get_value(piter, COL_Title)
-            textNote = self.get_value(piter, COL_Text)
-#             text = toHTML(textNote)
-            text = TextBuffer2HTMLConvert.serialize(textNote)
-            id = self.get_value(piter, COL_ID)
+            note_id = self.get_value(piter, COL_ID)
             creation = self.get_value(piter, COL_Creation)
-            modify = self.get_value(piter, COL_Modify)                       
-#           xml.addChild(self, name , text , parent = None, attr = None):
-            pelem = xml.addChild("note", text, parent)
+            modify = self.get_value(piter, COL_Modify)
+            attr = { "Title" : title,
+                     "ID" : str(note_id),
+                     "CreationDate" : creation,
+                     "LastModify" : modify }
+                        
+            pelem = xml.addChild("note", text, parent, attr)
             if (self.iter_n_children(piter) != 0):
                 inserXMLEntry(self.iter_children(piter), xml, pelem)
             piter = self.iter_next(piter)

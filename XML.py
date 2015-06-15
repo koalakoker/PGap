@@ -18,10 +18,10 @@ class XML():
         attr = { "Version" : ver }
         self.root.attrib = attr
         
-    def addChild(self, name , text , parent = None, attr = None):
+    def addChild(self, tagName , text , parent = None, attr = None):
         if (parent == None):
             parent = self.root
-        child = Element(name)
+        child = Element(tagName)
         if (attr != None):
             child.attrib = attr
         child.text = text
