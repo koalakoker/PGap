@@ -30,8 +30,17 @@ COL_Text = 4
 class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
     
+    XML_DUMMY = -1
     XML_GTK_SERIALIZE = 0
     XML_HTML = 1
+    
+    xml_save_mode = XML_GTK_SERIALIZE
+    
+    XML_NOTE_TAG = "note"
+    XML_TITLE_TAG = "Title"
+    XML_ID_TAG = "ID"
+    XML_CREATION_TAG = "CreationDate"
+    XML_LASTMODIFY_TAG = "LastModify"
     
     def __init__(self, tagTable = None):
         gtk.TreeStore.__init__(self, gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING, gobject.TYPE_STRING, gtk.TextBuffer)
@@ -70,7 +79,7 @@ class NoteModel(gtk.TreeStore):
         
                 
     def addNewNote(self, node = None):
-        # return the iter to the new node
+        # This function create a totally new note and return the iter to the new node
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         self.disconnect(self.hnd)
         piter = self.append(node, ('new note %i' % self.newPageID , self.newPageID, now, now, undobufferrich('', self.tagTable)))
@@ -78,17 +87,34 @@ class NoteModel(gtk.TreeStore):
         self.newPageID += 1
         return piter
     
+    def addNote(self, node, title, id, creation, modify, textbuffer):
+        # This function add a note in the tree and return the iter to the node
+        
+        self.disconnect(self.hnd)
+        piter = self.append(node, (title , id, creation, modify, textbuffer))
+        self.hnd = self.connect("row-changed", self.callback)
+        return piter
+    
     def save(self, filename = None):
         
-        def inserXMLEntry(piter, xml, parent = None, mode = self.XML_GTK_SERIALIZE):
+        def inserXMLEntry(piter, xml, parent = None):
+            # Recursive function to create an XML node from data coming from notes
+            # piter is iterator of node model from where to get data
+            # xml is the xml object to populate
+            # parent is the parent node of the inserted xml element (None = root)
+            # This function get text and attribute and add the new xml element, then
+            # it re iterate for each child of piter, then
+            # it re iterate for each item next (brother) of piter
             
             #Text
-            if (mode == self.XML_GTK_SERIALIZE):
+            if (self.xml_save_mode == self.XML_GTK_SERIALIZE):
                 textNote = self.get_value(piter, COL_Text)
                 text = TextBuffer2HTMLConvert.serialize(textNote)
-            elif (mode == self.XML_HTML):
+            elif (self.xml_save_mode == self.XML_HTML):
                 textNote = self.get_value(piter, COL_Text)
-                text = toHTML(textNote)
+                text = TextBuffer2HTMLConvert.toHTML(textNote)
+            elif (self.xml_save_mode == self.XML_DUMMY):
+                text = "Dummy"
             else:
                 return
             
@@ -97,12 +123,12 @@ class NoteModel(gtk.TreeStore):
             note_id = self.get_value(piter, COL_ID)
             creation = self.get_value(piter, COL_Creation)
             modify = self.get_value(piter, COL_Modify)
-            attr = { "Title" : title,
-                     "ID" : str(note_id),
-                     "CreationDate" : creation,
-                     "LastModify" : modify }
+            attr = { self.XML_TITLE_TAG : title,
+                     self.XML_ID_TAG : str(note_id),
+                     self.XML_CREATION_TAG : creation,
+                     self.XML_LASTMODIFY_TAG : modify }
                         
-            pelem = xml.addChild("note", text, parent, attr)
+            pelem = xml.addChild(self.XML_NOTE_TAG, text, parent, attr)
             if (self.iter_n_children(piter) != 0):
                 inserXMLEntry(self.iter_children(piter), xml, pelem)
             piter = self.iter_next(piter)
@@ -114,14 +140,55 @@ class NoteModel(gtk.TreeStore):
         
         piter = self.get_iter_root()
         inserXMLEntry(piter, xml)
-        xml.visualize(xml.root)
+#         xml.visualize(xml.root)
         xml.save(filename)
         
     def load(self, filename = None):
+        
+        def insertNoteEntry(node, xmlNode):
+            # Recursive function to inser a note using the data coming from the XML node
+            # node is the node of the xml from where to get data (None = root)
+            # xml is the xml object to get data from
+            # This function get text and attribute data from XML and add the note element, then
+            # it re iterate for each child of node, then
+            # it re iterate for each item next (brother) of node
+            
+            pelem = node
+            
+            if (xmlNode.tag == self.XML_NOTE_TAG):
+                
+            
+                textbuffer = undobufferrich('', self.tagTable);
+            
+                #Text
+                if (self.xml_save_mode == self.XML_GTK_SERIALIZE):
+                    data = xmlNode.text
+                    TextBuffer2HTMLConvert.deserialize(textbuffer, data)
+                else:
+                    return
+            
+                #Attributes
+                attr = xmlNode.attrib
+                print(attr)
+                title = attr[self.XML_TITLE_TAG] 
+                note_id = int(attr[self.XML_ID_TAG])
+                creation = attr[self.XML_CREATION_TAG]
+                modify = attr[self.XML_LASTMODIFY_TAG]
+                        
+                pelem = self.addNote(node, title, note_id, creation, modify, textbuffer)
+                
+            for xmlChild in xmlNode:
+                insertNoteEntry(pelem, xmlChild)
+                
         print ("Loading...")
         xml = XML.XML()
         xml.load(filename)
-        xml.visualize(xml.root)
+#         xml.visualize(xml.root)
+        
+        # verify version from attrib xml.root
+        
+        self.clear() # Clear previous values - tbv
+        insertNoteEntry(None, xml.root) # Node = none is root
         
 if __name__ == '__main__':
     note = NoteModel()

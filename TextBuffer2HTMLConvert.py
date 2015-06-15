@@ -5,11 +5,15 @@ Created on 02/giu/2015
 '''
 
 import os
+#test
+import gtk
     
 typeTag = {"Bold": 0, "Underline": 1, "Italic": 2}
 statusTag = [False, False, False]
 HTMLTagsOpen = ["<b>","<u>","<i>"]
 HTMLTagsClose = ["</b>", "</u>" ,"</i>"]
+
+XML_SEPARATOR = "##@@##"
 
 def getTagNames(tags):
     currentTag = []
@@ -32,11 +36,11 @@ def iterNext(textBuffer, start, end, istr):
         if not (statusTag[typeTag[name]]):
             istr += HTMLTagsOpen[typeTag[name]]  #   "<" + name + ">"    
             statusTag[typeTag[name]] = True
-    next = start.copy()
-    next.forward_to_tag_toggle(None)
-    istr += start.get_text(next)
+    pnext = start.copy()
+    pnext.forward_to_tag_toggle(None)
+    istr += start.get_text(pnext)
     
-    return iterNext(textBuffer, next, end, istr)
+    return iterNext(textBuffer, pnext, end, istr)
 
 def toHTML(textBuffer, start = None, end = None):
     if (start == None):
@@ -56,9 +60,6 @@ def toHTML(textBuffer, start = None, end = None):
 
 </html> """
     
-#     out_file = open("out.html","w")
-#     out_file.write(outStr)
-#     out_file.close()
     return outStr
     
 def serialize(textBuffer, start = None, end = None):
@@ -68,12 +69,26 @@ def serialize(textBuffer, start = None, end = None):
         end = textBuffer.get_end_iter()
     myFormat = textBuffer.register_serialize_tagset('my-tagset')
     exported = textBuffer.serialize(textBuffer, myFormat, start, end)
+
+    preambleTxt = exported[:26]
+    #lenTxt = strToInt(exported[26:30])
+    #skip exported[26:29] beacuse it is binay =  len of text
+    text = exported[30:]
     
-#     out_file = open("serializeTB","w")
-#     out_file.write(exported)
-#     out_file.close()
-    
+    exported = preambleTxt + XML_SEPARATOR + text        
     return exported
+
+def deserialize(retTextBuffer, data, start = None):
+    dataSplitted = data.split(XML_SEPARATOR,1)
+    preambleTxt = dataSplitted[0]
+    text = dataSplitted[1]
+    data = preambleTxt + intToStr(len(text)) + text
+    
+    if (start == None):
+        start = retTextBuffer.get_start_iter()
+    myFormat = retTextBuffer.register_deserialize_tagset('my-tagset')
+    retTextBuffer.deserialize(retTextBuffer, myFormat, start, data)
+    return retTextBuffer
 
 def formatting(textBuffer, start = None, end = None):
     if (start == None):
@@ -90,3 +105,22 @@ def formatting(textBuffer, start = None, end = None):
     out_file = open("converted","w")
     out_file.write(exported)
     out_file.close()
+    
+def strToInt(istr):
+    # return the value of istr that is a 4 char string with coded binary 32bit int.  ex. 0x00 00 00 1c => 28
+    retVal = None
+    if (len(istr) == 4):
+        retVal = (ord(istr[0]) << 24) + (ord(istr[1]) << 16) + (ord(istr[2]) << 8) + ord(istr[3])
+    return retVal
+
+def intToStr(value):
+    # return the coded binary 32bit int. Value is integer input. Returned value is a string. ex  28 => 0x00 00 00 1c
+    return chr((value >> 24) & 0xFF) + chr((value >> 16) & 0xFF) + chr((value >> 8) & 0xFF) + chr(value & 0xFF)  
+
+def prtHex(istr):
+    i = 0
+    for c in istr:
+        h = format(ord(c), '02x')
+        hi = format(i, '02x')
+        print (i,hi, c, h)
+        i = i + 1
