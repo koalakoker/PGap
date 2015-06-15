@@ -204,7 +204,7 @@ class PGapMain:
             
     def onNewNote(self, button = None):
         # Create new node        
-        piter = self.NoteStore.addNewNote(self.getNoteSelected())
+        piter = self.NoteStore.CreateNewNote(self.getNoteSelected())
         path = None
         if (piter != None):
             path = self.NoteStore.get_path(piter) 
@@ -240,7 +240,12 @@ class PGapMain:
         print "Save As..."
     
     def onOpen(self, menuItm):
-        self.NoteStore.load("test.xml")
+        if (self.NoteStore.load("test.xml") == False):
+            md = gtk.MessageDialog(self.window, 
+            gtk.DIALOG_DESTROY_WITH_PARENT, gtk.MESSAGE_INFO, 
+            gtk.BUTTONS_CLOSE, "File type not supported")
+            md.run()
+            md.destroy()
         
 if __name__ == '__main__':
     main = PGapMain()

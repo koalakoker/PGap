@@ -6,7 +6,6 @@ Created on 05/giu/2015
 
 import XML
 import TextBuffer2HTMLConvert
-from TextBuffer2HTMLConvert import toHTML
 
 initText = """Welcome to OGapp!
 
@@ -41,6 +40,8 @@ class NoteModel(gtk.TreeStore):
     XML_ID_TAG = "ID"
     XML_CREATION_TAG = "CreationDate"
     XML_LASTMODIFY_TAG = "LastModify"
+    
+    XML_VER = "1.0"
     
     def __init__(self, tagTable = None):
         gtk.TreeStore.__init__(self, gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING, gobject.TYPE_STRING, gtk.TextBuffer)
@@ -78,7 +79,7 @@ class NoteModel(gtk.TreeStore):
                 self.newPageID += 1
         
                 
-    def addNewNote(self, node = None):
+    def CreateNewNote(self, node = None):
         # This function create a totally new note and return the iter to the new node
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         self.disconnect(self.hnd)
@@ -87,111 +88,113 @@ class NoteModel(gtk.TreeStore):
         self.newPageID += 1
         return piter
     
-    def addNote(self, node, title, id, creation, modify, textbuffer):
+    def addNote(self, node, title, idNote, creation, modify, textbuffer):
         # This function add a note in the tree and return the iter to the node
         
         self.disconnect(self.hnd)
-        piter = self.append(node, (title , id, creation, modify, textbuffer))
+        piter = self.append(node, (title , idNote, creation, modify, textbuffer))
         self.hnd = self.connect("row-changed", self.callback)
         return piter
     
     def save(self, filename = None):
         
-        def inserXMLEntry(piter, xml, parent = None):
-            # Recursive function to create an XML node from data coming from notes
-            # piter is iterator of node model from where to get data
-            # xml is the xml object to populate
-            # parent is the parent node of the inserted xml element (None = root)
-            # This function get text and attribute and add the new xml element, then
-            # it re iterate for each child of piter, then
-            # it re iterate for each item next (brother) of piter
-            
-            #Text
-            if (self.xml_save_mode == self.XML_GTK_SERIALIZE):
-                textNote = self.get_value(piter, COL_Text)
-                text = TextBuffer2HTMLConvert.serialize(textNote)
-            elif (self.xml_save_mode == self.XML_HTML):
-                textNote = self.get_value(piter, COL_Text)
-                text = TextBuffer2HTMLConvert.toHTML(textNote)
-            elif (self.xml_save_mode == self.XML_DUMMY):
-                text = "Dummy"
-            else:
-                return
-            
-            #Attributes
-            title = self.get_value(piter, COL_Title)
-            note_id = self.get_value(piter, COL_ID)
-            creation = self.get_value(piter, COL_Creation)
-            modify = self.get_value(piter, COL_Modify)
-            attr = { self.XML_TITLE_TAG : title,
-                     self.XML_ID_TAG : str(note_id),
-                     self.XML_CREATION_TAG : creation,
-                     self.XML_LASTMODIFY_TAG : modify }
-                        
-            pelem = xml.addChild(self.XML_NOTE_TAG, text, parent, attr)
-            if (self.iter_n_children(piter) != 0):
-                inserXMLEntry(self.iter_children(piter), xml, pelem)
-            piter = self.iter_next(piter)
-            if (piter != None):
-                inserXMLEntry(piter, xml, parent)
-        
-        print ("Saving...")
-        xml = XML.XML()
+        xml = XML.XML(self.XML_VER)
         
         piter = self.get_iter_root()
-        inserXMLEntry(piter, xml)
-#         xml.visualize(xml.root)
+        
+        if (piter != None):
+            self.insertXMLEntry(piter, xml)
+            
         xml.save(filename)
         
     def load(self, filename = None):
-        
-        def insertNoteEntry(node, xmlNode):
-            # Recursive function to inser a note using the data coming from the XML node
-            # node is the node of the xml from where to get data (None = root)
-            # xml is the xml object to get data from
-            # This function get text and attribute data from XML and add the note element, then
-            # it re iterate for each child of node, then
-            # it re iterate for each item next (brother) of node
-            
-            pelem = node
-            
-            if (xmlNode.tag == self.XML_NOTE_TAG):
-                
-            
-                textbuffer = undobufferrich('', self.tagTable);
-            
-                #Text
-                if (self.xml_save_mode == self.XML_GTK_SERIALIZE):
-                    data = xmlNode.text
-                    TextBuffer2HTMLConvert.deserialize(textbuffer, data)
-                else:
-                    return
-            
-                #Attributes
-                attr = xmlNode.attrib
-                print(attr)
-                title = attr[self.XML_TITLE_TAG] 
-                note_id = int(attr[self.XML_ID_TAG])
-                creation = attr[self.XML_CREATION_TAG]
-                modify = attr[self.XML_LASTMODIFY_TAG]
                         
-                pelem = self.addNote(node, title, note_id, creation, modify, textbuffer)
-                
-            for xmlChild in xmlNode:
-                insertNoteEntry(pelem, xmlChild)
-                
-        print ("Loading...")
-        xml = XML.XML()
-        xml.load(filename)
-#         xml.visualize(xml.root)
+        xml = XML.XML(self.XML_VER) # Dummy ver it is loaded from the file
+        try:
+            xml.load(filename)
+        except:
+            return False
+        self.clear() 
+        self.insertNoteEntry(None, xml.root) # Node = none is root
+        return True
         
-        # verify version from attrib xml.root
+    # Save
+    def insertXMLEntry(self, piter, xml, parent = None):
+        # Recursive function to create an XML node from data coming from notes
+        # piter is iterator of node model from where to get data
+        # xml is the xml object to populate
+        # parent is the parent node of the inserted xml element (None = root)
+        # This function get text and attribute and add the new xml element, then
+        # it re iterate for each child of piter, then
+        # it re iterate for each item next (brother) of piter
         
-        self.clear() # Clear previous values - tbv
-        insertNoteEntry(None, xml.root) # Node = none is root
+        #Text
+        if (self.xml_save_mode == self.XML_GTK_SERIALIZE):
+            textNote = self.get_value(piter, COL_Text)
+            text = TextBuffer2HTMLConvert.serialize(textNote)
+        elif (self.xml_save_mode == self.XML_HTML):
+            textNote = self.get_value(piter, COL_Text)
+            text = TextBuffer2HTMLConvert.toHTML(textNote)
+        elif (self.xml_save_mode == self.XML_DUMMY):
+            text = "Dummy"
+        else:
+            return
+        
+        #Attributes
+        title = self.get_value(piter, COL_Title)
+        note_id = self.get_value(piter, COL_ID)
+        creation = self.get_value(piter, COL_Creation)
+        modify = self.get_value(piter, COL_Modify)
+        attr = { self.XML_TITLE_TAG : title,
+                 self.XML_ID_TAG : str(note_id),
+                 self.XML_CREATION_TAG : creation,
+                 self.XML_LASTMODIFY_TAG : modify }
+                    
+        pelem = xml.addChild(self.XML_NOTE_TAG, text, parent, attr)
+        if (self.iter_n_children(piter) != 0):
+            self.insertXMLEntry(self.iter_children(piter), xml, pelem)
+        piter = self.iter_next(piter)
+        if (piter != None):
+            self.insertXMLEntry(piter, xml, parent)
+
+    # Load
+    def insertNoteEntry(self, node, xmlNode):
+        # Recursive function to inser a note using the data coming from the XML node
+        # node is the node of the xml from where to get data (None = root)
+        # xml is the xml object to get data from
+        # This function get text and attribute data from XML and add the note element, then
+        # it re iterate for each child of node, then
+        # it re iterate for each item next (brother) of node
+            
+        pelem = node
+        
+        if (xmlNode.tag == self.XML_NOTE_TAG):
+            
+        
+            textbuffer = undobufferrich('', self.tagTable);
+        
+            #Text
+            if (self.xml_save_mode == self.XML_GTK_SERIALIZE):
+                data = xmlNode.text
+                TextBuffer2HTMLConvert.deserialize(textbuffer, data)
+            else:
+                return
+        
+            #Attributes
+            attr = xmlNode.attrib
+            title = attr[self.XML_TITLE_TAG] 
+            note_id = int(attr[self.XML_ID_TAG])
+            creation = attr[self.XML_CREATION_TAG]
+            modify = attr[self.XML_LASTMODIFY_TAG]
+                    
+            pelem = self.addNote(node, title, note_id, creation, modify, textbuffer)
+            
+        for xmlChild in xmlNode:
+            self.insertNoteEntry(pelem, xmlChild)
         
 if __name__ == '__main__':
-    note = NoteModel()
-    note.populate()
-    note.addNewNote()
-    note.save("test.xml")
+#     note = NoteModel()
+#     note.populate()
+#     note.CreateNewNote()
+#     note.save("test.xml")
+    pass

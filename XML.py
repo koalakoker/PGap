@@ -7,16 +7,19 @@ Created on 01/giu/2015
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
-ver = "1.0"
 defFilename = "test.xml"
 
 class XML():
     
-    def __init__(self):
+    XML_VERSION_TAG = "Version"
+    
+    def __init__(self, ver):
         
         self.root = Element('root')
-        attr = { "Version" : ver }
+        attr = { self.XML_VERSION_TAG : ver }
         self.root.attrib = attr
+        
+        self.ver = ver
         
     def addChild(self, tagName , text , parent = None, attr = None):
         if (parent == None):
@@ -35,6 +38,7 @@ class XML():
     def load(self, filename = defFilename):
         tree = ElementTree.parse(filename)
         self.root = tree.getroot()
+        self.ver = self.root.attrib[self.XML_VERSION_TAG] 
         
     def visualize(self, node, indent = ""):
         out = indent + node.tag

@@ -5,8 +5,6 @@ Created on 02/giu/2015
 '''
 
 import os
-#test
-import gtk
     
 typeTag = {"Bold": 0, "Underline": 1, "Italic": 2}
 statusTag = [False, False, False]
