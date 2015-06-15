@@ -18,15 +18,15 @@ class XML():
         attr = { "Version" : ver }
         self.root.attrib = attr
         
-    def addChild(self, name , text , node = None, attr = None):
+    def addChild(self, name , text , parent = None, attr = None):
+        if (parent == None):
+            parent = self.root
         child = Element(name)
         if (attr != None):
             child.attrib = attr
         child.text = text
-        if (node == None):
-            self.root.append(child)
-        else:
-            self.node.append(child)
+        parent.append(child)
+        return child
         
     def save(self, filename = defFilename):
         tree = ElementTree.ElementTree(self.root)

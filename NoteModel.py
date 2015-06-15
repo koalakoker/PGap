@@ -77,17 +77,21 @@ class NoteModel(gtk.TreeStore):
     
     def save(self, filename = None):
         
-        def inserXMLEntry(piter, xml):
-            title = self.get_value(piter,COL_Title)
-            textNote = self.get_value(piter,COL_Text)
+        def inserXMLEntry(piter, xml, parent = None):
+            title = self.get_value(piter, COL_Title)
+            textNote = self.get_value(piter, COL_Text)
 #             text = toHTML(textNote)
-            text = TextBuffer2HTMLConvert.serialize(textNote)                       
-            xml.addChild(title, text)
+            text = TextBuffer2HTMLConvert.serialize(textNote)
+            id = self.get_value(piter, COL_ID)
+            creation = self.get_value(piter, COL_Creation)
+            modify = self.get_value(piter, COL_Modify)                       
+#           xml.addChild(self, name , text , parent = None, attr = None):
+            pelem = xml.addChild("note", text, parent)
             if (self.iter_n_children(piter) != 0):
-                inserXMLEntry(self.iter_children(piter), xml)
+                inserXMLEntry(self.iter_children(piter), xml, pelem)
             piter = self.iter_next(piter)
             if (piter != None):
-                inserXMLEntry(piter, xml)
+                inserXMLEntry(piter, xml, parent)
         
         print ("Saving...")
         xml = XML.XML()
