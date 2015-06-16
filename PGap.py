@@ -11,6 +11,7 @@ from gtk import gdk
 # import TextBuffer2HTMLConvert
 import pango
 from NoteModel import NoteModel
+import os
 
 class PGapMain:
     
@@ -240,12 +241,25 @@ class PGapMain:
         print "Save As..."
     
     def onOpen(self, menuItm):
-        if (self.NoteStore.load("test.xml") == False):
-            md = gtk.MessageDialog(self.window, 
-            gtk.DIALOG_DESTROY_WITH_PARENT, gtk.MESSAGE_INFO, 
-            gtk.BUTTONS_CLOSE, "File type not supported")
-            md.run()
-            md.destroy()
+        chooser = gtk.FileChooserDialog(title="Open notes file",action=gtk.FILE_CHOOSER_ACTION_OPEN,
+                                  buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
+        chooser.set_current_folder(os.getcwd())
+        filefilter = gtk.FileFilter()
+        filefilter.set_name("PGap note file")
+        filefilter.add_pattern("*.xml")
+        chooser.add_filter(filefilter)
+        filefilter = gtk.FileFilter()
+        filefilter.set_name("All files")
+        filefilter.add_pattern("*")
+        chooser.add_filter(filefilter)
+        if (chooser.run() == gtk.RESPONSE_OK):
+            if (self.NoteStore.load(chooser.get_filename()) == False):
+                md = gtk.MessageDialog(self.window, 
+                gtk.DIALOG_DESTROY_WITH_PARENT, gtk.MESSAGE_INFO, 
+                gtk.BUTTONS_CLOSE, "File type not supported")
+                md.run()
+                md.destroy()
+        chooser.destroy()
         
 if __name__ == '__main__':
     main = PGapMain()

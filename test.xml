@@ -1,19 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
-<root Version="1.0"><note CreationDate="2015-06-15 16:03" ID="2" LastModify="2015-06-15 16:03" Title="new note 2">GTKTEXTBUFFERCONTENTS-0001##@@## &lt;text_view_markup&gt;
+<root Version="1.0"><note CreationDate="2015-06-15 21:48" ID="2" LastModify="2015-06-15 21:48" Title="new note 2">GTKTEXTBUFFERCONTENTS-0001##@@## &lt;text_view_markup&gt;
  &lt;tags&gt;
  &lt;/tags&gt;
 &lt;text&gt;&lt;/text&gt;
 &lt;/text_view_markup&gt;
-<note Creatfgdgdfg
+<note CreationDate="2015-06-15 21:48" ID="3" LastModify="2015-06-15 21:48" Title="new note 3">GTKTEXTBUFFERCONTENTS-0001##@@## &lt;text_view_markup&gt;
+ &lt;tags&gt;
  &lt;/tags&gt;
 &lt;text&gt;&lt;/text&gt;
 &lt;/text_view_markup&gt;
-<note CreationDate="2015-06-15 16:03" ID="5" LastModify="2015-06-15 16:03" Title="new note 5">GTKTEXTBUFFERCONTENTS-0001##@@## &lt;text_view_markup&gt;
- &lt;tags&gt;
-  &lt;tag name="Bold" priority="0"&gt;
-   &lt;attr name="weight" type="gint" value="700" /&gt;
-  &lt;/tag&gt;
- &lt;/tags&gt;
-&lt;text&gt;&lt;apply_tag name="Bold"&gt;Pippo&lt;/apply_tag&gt;&lt;/text&gt;
-&lt;/text_view_markup&gt;
-</note></note></note></note></root>
+</note></note></root>
