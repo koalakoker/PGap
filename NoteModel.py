@@ -98,14 +98,18 @@ class NoteModel(gtk.TreeStore):
     
     def save(self, filename = None):
         
-        xml = XML.XML(self.XML_VER)
+        try:
+            xml = XML.XML(self.XML_VER)
         
-        piter = self.get_iter_root()
+            piter = self.get_iter_root()
         
-        if (piter != None):
-            self.insertXMLEntry(piter, xml)
+            if (piter != None):
+                self.insertXMLEntry(piter, xml)
             
-        xml.save(filename)
+                xml.save(filename)
+        except:
+            return False
+        return True
         
     def load(self, filename = None):
                         
