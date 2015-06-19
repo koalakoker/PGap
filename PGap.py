@@ -8,10 +8,11 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 from gtk import gdk
-# import TextBuffer2HTMLConvert
 import pango
 from NoteModel import NoteModel
 import os
+
+PROGRAM_NAME = "PGap"
 
 class PGapMain:
     
@@ -32,10 +33,7 @@ class PGapMain:
     def delete_event(self, widget=None, event=None, data=None):
         gtk.main_quit()
         return False
-    
-    def report_signal(self, sender):
-        print "Receiver reacts to z_signal"
-    
+        
     def __init__(self):
         self.gladefile = "pgapgui.glade"  
         self.builder = gtk.Builder()
@@ -77,7 +75,8 @@ class PGapMain:
         
         # create a TreeStore with one string showColumn to use as the model
         self.NoteStore = NoteModel(self.tagTable)
-        self.NoteStore.connect('z_signal', self.report_signal)
+        self.NoteStore.connect('modified_title', self.onTitleChanged)
+        self.NoteStore.connect('modified_text', self.onTextChanged)
         #Populate
 #         self.NoteStore.populate()
 
@@ -126,17 +125,30 @@ class PGapMain:
         self.keyCtrlPressed = False
         
         self.fileSelected = None
-        self.updateTitle(self.fileSelected)
+        self.updateTitle()
         
         # Clipboard
         self.clipboard = gtk.Clipboard()
+    
+    def onTitleChanged(self, NoteModel):
+        self.updateTitle()
         
-    def updateTitle(self, fileSelected = None):
+    def onTextChanged(self, NoteModel):
+        piter = self.getNoteSelected()
+        path = NoteModel.get_path(piter)
+        self.NoteStore.emit("row-changed", path, piter)
+        
+    def updateTitle(self):
+        fileSelected = self.fileSelected
         modIndincator = ""
         if (self.NoteStore.modified):
             modIndincator = "*"
+        newTitle = PROGRAM_NAME
         if (fileSelected != None):
-            self.window.set_title("PGap - " + fileSelected + modIndincator)
+            newTitle += " - " + fileSelected + modIndincator
+        else:
+            newTitle += " - new notebook" + modIndincator
+        self.window.set_title(newTitle)
                                         
     def updateColumnView(self, CheckMenuItem):
         for i in range(len(self.columnInfo)):
@@ -271,7 +283,7 @@ class PGapMain:
             fileSelected = chooser.get_filename()
             if (self.NoteStore.save(fileSelected) == True):
                 self.fileSelected = fileSelected
-                self.updateTitle(self.fileSelected)
+                self.updateTitle()
             else:
                 pass
         chooser.destroy()
@@ -298,7 +310,7 @@ class PGapMain:
                 md.destroy()
             else:
                 self.fileSelected = fileSelected
-                self.updateTitle(self.fileSelected)
+                self.updateTitle()
         chooser.destroy()
         
 if __name__ == '__main__':

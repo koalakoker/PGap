@@ -19,6 +19,12 @@ class undobufferrich(undobuffer.UndoableBuffer):
         self.begin_not_undoable_action()
         self.set_text(text)
         self.end_not_undoable_action()
+        
+        self.connect('apply-tag', self.changed)
+        self.connect('remove-tag', self.changed)
+        
+    def changed(self, dummy1 = None, dummy2 = None, dummy3 = None, dummy4 = None):
+        self.emit("changed")
                 
     def isBlockTagged(self, tag, start, end):
         # return True if all char in the buffer from start to end is tagged with tag, else False

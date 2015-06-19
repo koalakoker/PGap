@@ -55,13 +55,18 @@ class NoteModel(gtk.TreeStore):
         self.tagTable = tagTable
         
         self.hnd = self.connect("row-changed", self.rowChangedCallback)
+    
+    def setModified(self, modified):
+        self.modified = modified
+        self.emit("modified_title")
          
-    def rowChangedCallback(self, treemodel, path, piter):
-        self.disconnect(self.hnd)
-        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-        self.set_value (piter, 3, now)
-        self.modified = True
-        self.hnd = self.connect("row-changed", self.rowChangedCallback)
+    def rowChangedCallback(self, treemodel, path = None, piter = None):
+        if (piter != None):
+            self.disconnect(self.hnd)
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            self.set_value (piter, 3, now)
+            self.setModified(True)
+            self.hnd = self.connect("row-changed", self.rowChangedCallback)
         
     def populate(self):        
         for parent in range(4):
@@ -70,23 +75,31 @@ class NoteModel(gtk.TreeStore):
             if (parent == 0):
                 it = initText
             self.disconnect(self.hnd)
-            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, undobufferrich(it, self.tagTable)))
+            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, self.CreateNewBuffer(it, self.tagTable)))
             self.hnd = self.connect("row-changed", self.rowChangedCallback)
             self.newPageID += 1
             for child in range(3):
                 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
                 self.disconnect(self.hnd)
-                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, undobufferrich("", self.tagTable)))
+                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, self.CreateNewBuffer("", self.tagTable)))
                 self.hnd = self.connect("row-changed", self.rowChangedCallback)
                 self.newPageID += 1
-        
-                
+    
+    def TextChanged(self, textBuffer):
+        self.emit("modified_text")    
+    
+    def CreateNewBuffer(self, initText = "", tagTable = None):
+        newText = undobufferrich(initText, tagTable)
+        newText.connect("changed", self.TextChanged)
+        return newText
+    
     def CreateNewNote(self, node = None):
         # This function create a totally new note and return the iter to the new node
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         self.disconnect(self.hnd)
-        piter = self.append(node, ('new note %i' % self.newPageID , self.newPageID, now, now, undobufferrich('', self.tagTable)))
+        piter = self.append(node, ('new note %i' % self.newPageID , self.newPageID, now, now, self.CreateNewBuffer('', self.tagTable)))
         self.hnd = self.connect("row-changed", self.rowChangedCallback)
+        self.setModified(True)
         self.newPageID += 1
         return piter
     
@@ -109,7 +122,7 @@ class NoteModel(gtk.TreeStore):
                 self.insertXMLEntry(piter, xml)
             
                 xml.save(filename)
-                self.modified = False
+                self.setModified(False)
         except:
             return False
         return True
@@ -123,8 +136,7 @@ class NoteModel(gtk.TreeStore):
             return False
         self.clear() 
         self.insertNoteEntry(None, xml.root) # Node = none is root
-        self.modified = False
-        self.emit("z_signal")
+        self.setModified(False)
         return True
         
     # Save
@@ -180,7 +192,7 @@ class NoteModel(gtk.TreeStore):
         if (xmlNode.tag == self.XML_NOTE_TAG):
             
         
-            textbuffer = undobufferrich('', self.tagTable);
+            textbuffer = self.CreateNewBuffer('', self.tagTable);
         
             #Text
             if (self.xml_save_mode == self.XML_GTK_SERIALIZE):
@@ -202,11 +214,12 @@ class NoteModel(gtk.TreeStore):
             self.insertNoteEntry(pelem, xmlChild)
 
 gobject.type_register(NoteModel)
-gobject.signal_new("z_signal", NoteModel, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
+gobject.signal_new("modified_title", NoteModel, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
+gobject.signal_new("modified_text",  NoteModel, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
         
 if __name__ == '__main__':
-#     note = NoteModel()
-#     note.populate()
-#     note.CreateNewNote()
-#     note.save("test.xml")
+    note = NoteModel()
+    note.populate()
+    note.CreateNewNote()
+    note.save("test.xml")
     pass
