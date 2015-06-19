@@ -202,6 +202,8 @@ class PGapMain:
                 self.textbuffer.undo()
             if ((keyPressName == "y") or (keyPressName == "Z")):
                 self.textbuffer.redo()
+            if (keyPressName == "s"):
+                self.onSave()
         
         if ((keyPressName == "Control_L") or (keyPressName == "Control_R")):
             self.keyCtrlPressed = True
@@ -260,7 +262,7 @@ class PGapMain:
         piter = self.NoteStore.get_iter(path)
         self.NoteStore.set_value(piter, 0, new_text)
         
-    def onSave(self, menuItm):
+    def onSave(self, menuItm = None):
         if (self.fileSelected == None):
             self.onSaveAs(None)
         else:
