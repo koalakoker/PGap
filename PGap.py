@@ -226,6 +226,7 @@ class PGapMain:
             self.textbuffer = self.NoteStore.get_value(itersel, 4)
             self.textview.set_buffer(self.textbuffer)
             self.textview.set_sensitive(True)
+            self.textbuffer.setSavePosition()
         else:
             self.textview.set_sensitive(False)
             
@@ -264,7 +265,8 @@ class PGapMain:
         if (self.fileSelected == None):
             self.onSaveAs(None)
         else:
-            self.NoteStore.save(self.fileSelected)
+            if (self.NoteStore.save(self.fileSelected) == True):
+                self.textbuffer.setSavePosition()
     
     def onSaveAs(self, menuItm):
         chooser = gtk.FileChooserDialog(title="Save notes file",action=gtk.FILE_CHOOSER_ACTION_SAVE,

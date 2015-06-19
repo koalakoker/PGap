@@ -87,10 +87,15 @@ class NoteModel(gtk.TreeStore):
     
     def TextChanged(self, textBuffer):
         self.emit("modified_text")    
+        
+    def resetModify(self, textBuffer):
+        self.setModified(False)
     
-    def CreateNewBuffer(self, initText = "", tagTable = None):
+    def CreateNewBuffer(self, initText = "", tagTable = None, connect = True):
         newText = undobufferrich(initText, tagTable)
-        newText.connect("changed", self.TextChanged)
+        if (connect):
+            newText.connect("changed", self.TextChanged)
+        newText.connect("reset_modify", self.resetModify)
         return newText
     
     def CreateNewNote(self, node = None):
@@ -192,12 +197,13 @@ class NoteModel(gtk.TreeStore):
         if (xmlNode.tag == self.XML_NOTE_TAG):
             
         
-            textbuffer = self.CreateNewBuffer('', self.tagTable);
+            textbuffer = self.CreateNewBuffer('', self.tagTable, False); # Do not connect "changed" signal
         
             #Text
             if (self.xml_save_mode == self.XML_GTK_SERIALIZE):
                 data = xmlNode.text
                 TextBuffer2HTMLConvert.deserialize(textbuffer, data)
+                textbuffer.connect("changed", self.TextChanged) # Connect "changed" signal after de-serialization
             else:
                 return
         

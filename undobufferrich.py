@@ -4,6 +4,7 @@ Created on 02/giu/2015
 @author: koala
 '''
 
+import gobject
 import undobuffer
 
 class undobufferrich(undobuffer.UndoableBuffer):
@@ -19,11 +20,22 @@ class undobufferrich(undobuffer.UndoableBuffer):
         self.begin_not_undoable_action()
         self.set_text(text)
         self.end_not_undoable_action()
+        self.savePosition = 0
         
-        self.connect('apply-tag', self.changed)
-        self.connect('remove-tag', self.changed)
+        self.connect('changed', self.verifyNoModification)
+        self.connect('apply-tag', self.emitChanged)
+        self.connect('remove-tag', self.emitChanged)
+    
+    def setSavePosition(self):
+        print ("Change in setSavePosition")
+        self.savePosition = len(self.undo_stack)    
+    
+    def verifyNoModification(self, dummy):
+        if (self.savePosition == len(self.undo_stack)):
+            self.stop_emission("changed")
+            self.emit("reset_modify")
         
-    def changed(self, dummy1 = None, dummy2 = None, dummy3 = None, dummy4 = None):
+    def emitChanged(self, dummy1 = None, dummy2 = None, dummy3 = None, dummy4 = None):
         self.emit("changed")
                 
     def isBlockTagged(self, tag, start, end):
@@ -48,3 +60,6 @@ class undobufferrich(undobuffer.UndoableBuffer):
             self.apply_tag(tag, start, end)
         else:
             self.remove_tag(tag, start, end)
+
+gobject.type_register(undobufferrich)
+gobject.signal_new("reset_modify", undobufferrich, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())

@@ -1,7 +1,17 @@
 <?xml version='1.0' encoding='utf-8'?>
-<root Version="1.0"><note CreationDate="2015-06-19 11:35" ID="2" LastModify="2015-06-19 11:35" Title="new note 2">GTKTEXTBUFFERCONTENTS-0001##@@## &lt;text_view_markup&gt;
+<root Version="1.0"><note CreationDate="2015-06-19 11:35" ID="2" LastModify="2015-06-19 16:11" Title="new note 2">GTKTEXTBUFFERCONTENTS-0001##@@## &lt;text_view_markup&gt;
+ &lt;tags&gt;
+ &lt;/tags&gt;
+&lt;text&gt;Pippo Pappo Peppa Pippo&lt;/text&gt;
+&lt;/text_view_markup&gt;
+<note CreationDate="2015-06-19 15:56" ID="2" LastModify="2015-06-19 15:56" Title="new note 2">GTKTEXTBUFFERCONTENTS-0001##@@## &lt;text_view_markup&gt;
  &lt;tags&gt;
  &lt;/tags&gt;
 &lt;text&gt;&lt;/text&gt;
 &lt;/text_view_markup&gt;
-</note></root>
+<note CreationDate="2015-06-19 15:56" ID="3" LastModify="2015-06-19 15:56" Title="new note 3">GTKTEXTBUFFERCONTENTS-0001##@@## &lt;text_view_markup&gt;
+ &lt;tags&gt;
+ &lt;/tags&gt;
+&lt;text&gt;&lt;/text&gt;
+&lt;/text_view_markup&gt;
+</note></note></note></root>
