@@ -28,6 +28,7 @@ COL_Text = 4
 
 class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
+    modified = True
     
     XML_DUMMY = -1
     XML_GTK_SERIALIZE = 0
@@ -53,13 +54,14 @@ class NoteModel(gtk.TreeStore):
         # 4: String - Testo nota
         self.tagTable = tagTable
         
-        self.hnd = self.connect("row-changed", self.callback)
+        self.hnd = self.connect("row-changed", self.rowChangedCallback)
          
-    def callback(self, treemodel, path, piter):
+    def rowChangedCallback(self, treemodel, path, piter):
         self.disconnect(self.hnd)
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         self.set_value (piter, 3, now)
-        self.hnd = self.connect("row-changed", self.callback)
+        self.modified = True
+        self.hnd = self.connect("row-changed", self.rowChangedCallback)
         
     def populate(self):        
         for parent in range(4):
@@ -69,13 +71,13 @@ class NoteModel(gtk.TreeStore):
                 it = initText
             self.disconnect(self.hnd)
             piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, undobufferrich(it, self.tagTable)))
-            self.hnd = self.connect("row-changed", self.callback)
+            self.hnd = self.connect("row-changed", self.rowChangedCallback)
             self.newPageID += 1
             for child in range(3):
                 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
                 self.disconnect(self.hnd)
                 self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, undobufferrich("", self.tagTable)))
-                self.hnd = self.connect("row-changed", self.callback)
+                self.hnd = self.connect("row-changed", self.rowChangedCallback)
                 self.newPageID += 1
         
                 
@@ -84,7 +86,7 @@ class NoteModel(gtk.TreeStore):
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         self.disconnect(self.hnd)
         piter = self.append(node, ('new note %i' % self.newPageID , self.newPageID, now, now, undobufferrich('', self.tagTable)))
-        self.hnd = self.connect("row-changed", self.callback)
+        self.hnd = self.connect("row-changed", self.rowChangedCallback)
         self.newPageID += 1
         return piter
     
@@ -93,7 +95,7 @@ class NoteModel(gtk.TreeStore):
         
         self.disconnect(self.hnd)
         piter = self.append(node, (title , idNote, creation, modify, textbuffer))
-        self.hnd = self.connect("row-changed", self.callback)
+        self.hnd = self.connect("row-changed", self.rowChangedCallback)
         return piter
     
     def save(self, filename = None):
@@ -107,6 +109,7 @@ class NoteModel(gtk.TreeStore):
                 self.insertXMLEntry(piter, xml)
             
                 xml.save(filename)
+                self.modified = False
         except:
             return False
         return True
@@ -120,6 +123,8 @@ class NoteModel(gtk.TreeStore):
             return False
         self.clear() 
         self.insertNoteEntry(None, xml.root) # Node = none is root
+        self.modified = False
+        self.emit("z_signal")
         return True
         
     # Save
@@ -195,6 +200,9 @@ class NoteModel(gtk.TreeStore):
             
         for xmlChild in xmlNode:
             self.insertNoteEntry(pelem, xmlChild)
+
+gobject.type_register(NoteModel)
+gobject.signal_new("z_signal", NoteModel, gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
         
 if __name__ == '__main__':
 #     note = NoteModel()

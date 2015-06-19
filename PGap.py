@@ -33,6 +33,9 @@ class PGapMain:
         gtk.main_quit()
         return False
     
+    def report_signal(self, sender):
+        print "Receiver reacts to z_signal"
+    
     def __init__(self):
         self.gladefile = "pgapgui.glade"  
         self.builder = gtk.Builder()
@@ -59,7 +62,7 @@ class PGapMain:
                      "onOpen" : self.onOpen
                    }
         self.builder.connect_signals(handlers)
-        
+            
         #create tagTable
         self.tagTable = gtk.TextTagTable()
         self.tag_bold = gtk.TextTag("Bold")
@@ -74,6 +77,7 @@ class PGapMain:
         
         # create a TreeStore with one string showColumn to use as the model
         self.NoteStore = NoteModel(self.tagTable)
+        self.NoteStore.connect('z_signal', self.report_signal)
         #Populate
 #         self.NoteStore.populate()
 
@@ -128,8 +132,11 @@ class PGapMain:
         self.clipboard = gtk.Clipboard()
         
     def updateTitle(self, fileSelected = None):
+        modIndincator = ""
+        if (self.NoteStore.modified):
+            modIndincator = "*"
         if (fileSelected != None):
-            self.window.set_title("PGap - " + fileSelected)
+            self.window.set_title("PGap - " + fileSelected + modIndincator)
                                         
     def updateColumnView(self, CheckMenuItem):
         for i in range(len(self.columnInfo)):
@@ -224,7 +231,7 @@ class PGapMain:
 #         TextBuffer2HTMLConvert.toHTML(self.textbuffer)
 #         TextBuffer2HTMLConvert.serialize(self.textbuffer)
 #         self.NoteStore.populate()
-#             self.clipboard.request_text(self.callback)
+#             self.clipboard.request_text(self.rowChangedCallback)
             self.appoTxt = gtk.TextBuffer()
             self.clipboard.request_rich_text(self.appoTxt, self.callbackrich)
 #         diag = gtk.MessageDialog()
@@ -234,7 +241,7 @@ class PGapMain:
         print ("Hey")
 #         print (self, clipboard, clformat, text, length, data)
 
-    def callback(self, clipboard, text, data = None):
+    def rowChangedCallback(self, clipboard, text, data = None):
         print (text)
         
     def cell_edited_callback(self, cellrenderertext, path, new_text):
