@@ -162,15 +162,15 @@ class PGapMain:
             # Note: Tag name must be set in the button label
             tag = self.tagTable.lookup(button.get_label())
             
-            try:
-                bounds = self.textbuffer.get_selection_bounds()
+        try:
+            bounds = self.textbuffer.get_selection_bounds()
+            
+            if len(bounds) != 0:
+                start, end = bounds
+                self.textbuffer.toggleTag(tag, start, end)
                 
-                if len(bounds) != 0:
-                    start, end = bounds
-                    self.textbuffer.toggleTag(tag, start, end)
-                    
-            except AttributeError:
-                pass
+        except AttributeError:
+            pass
         
             
     
