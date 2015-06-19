@@ -198,7 +198,9 @@ class NoteModel(gtk.TreeStore):
             #Text
             if (self.xml_save_mode == self.XML_GTK_SERIALIZE):
                 data = xmlNode.text
+                textbuffer.begin_not_undoable_action() # Deserialization on load can't be undone
                 TextBuffer2HTMLConvert.deserialize(textbuffer, data)
+                textbuffer.end_not_undoable_action()
                 textbuffer.connect("changed", self.TextChanged) # Connect "changed" signal after de-serialization
             else:
                 return
