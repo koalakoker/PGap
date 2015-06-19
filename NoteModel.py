@@ -87,15 +87,11 @@ class NoteModel(gtk.TreeStore):
     
     def TextChanged(self, textBuffer):
         self.emit("modified_text")    
-        
-    def resetModify(self, textBuffer):
-        self.setModified(False)
     
     def CreateNewBuffer(self, initText = "", tagTable = None, connect = True):
         newText = undobufferrich(initText, tagTable)
         if (connect):
             newText.connect("changed", self.TextChanged)
-        newText.connect("reset_modify", self.resetModify)
         return newText
     
     def CreateNewNote(self, node = None):
