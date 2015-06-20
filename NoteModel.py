@@ -132,6 +132,12 @@ class NoteModel(gtk.TreeStore):
         linkList += separator + str(noteID)
         self.set_value(piter, COL_LinkList, linkList)
         print (linkList)
+        
+    def getLink(self, piter, num):
+        # Get link of the selected Note order num
+        linkList = self.get_value(piter, COL_LinkList)
+        links = linkList.split("#")
+        return links[num]
     
     def save(self, filename = None):
         

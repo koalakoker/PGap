@@ -53,6 +53,7 @@ class PGapMain:
                      "on_Creation Time_toggled": self.updateColumnView,
                      "keypress": self.onKeyPress,
                      "keyrelease": self.onKeyRelease,
+                     "buttonPress": self.onButtonPress,
                      "onCursorChanged": self.onNoteSelectionChange,
                      "onNewNote": self.onNewNote,
                      "on_BIU_button_clicked": self.on_BIU_button_clicked,
@@ -231,6 +232,31 @@ class PGapMain:
         if (keyPressName == "Escape"):
             self.onKeyEsc()
 #         print (gtk.gdk.keyval_name(event.keyval))
+
+    def onButtonPress(self, widget, event):
+        if (event.button == 1):
+            piter = widget.get_iter_at_location(int(event.x), int(event.y))
+            tags = piter.get_tags()
+            if (self.tag_link in tags):
+                print ("Link + Implement with CTRL")
+                self.cnt = -1
+                def iteraction(start, end):
+                    if (start.get_offset() > end.get_offset()):
+                        return
+                    tags = start.get_tags()
+                    if (self.tag_link in tags):
+                        self.cnt = self.cnt + 1
+                    start.forward_to_tag_toggle(None)
+                    iteraction(start, end)
+                    
+                textBuffer = widget.get_buffer() 
+                start = textBuffer.get_start_iter()
+                end = piter
+                iteraction(start, end)
+                print ("Found at %i" % self.cnt)
+                noteID = self.NoteStore.getLink(self.getNoteIter(), self.cnt)
+                print ("Note ID " + noteID)
+                
 
     def getNoteSelected(self):
         # Returns the node of self.TreeView that is selected or None
