@@ -42,6 +42,7 @@ class NoteModel(gtk.TreeStore):
     XML_ID_TAG = "ID"
     XML_CREATION_TAG = "CreationDate"
     XML_LASTMODIFY_TAG = "LastModify"
+    XML_LINKLIST_TAG = "LinkList"
     
     XML_VER = "1.0"
     
@@ -113,11 +114,11 @@ class NoteModel(gtk.TreeStore):
         self.newPageID += 1
         return piter
     
-    def addNote(self, node, title, idNote, creation, modify, textbuffer):
+    def addNote(self, node, title, idNote, creation, modify, textbuffer, linkList):
         # This function add a note in the tree and return the iter to the node
         
         self.disconnect(self.hnd)
-        piter = self.append(node, (title , idNote, creation, modify, textbuffer))
+        piter = self.append(node, (title , idNote, creation, modify, textbuffer, linkList))
         self.hnd = self.connect("row-changed", self.rowChangedCallback)
         return piter
     
@@ -187,10 +188,12 @@ class NoteModel(gtk.TreeStore):
         note_id = self.get_value(piter, COL_ID)
         creation = self.get_value(piter, COL_Creation)
         modify = self.get_value(piter, COL_Modify)
+        linkList = self.get_value(piter, COL_LinkList)
         attr = { self.XML_TITLE_TAG : title,
                  self.XML_ID_TAG : str(note_id),
                  self.XML_CREATION_TAG : creation,
-                 self.XML_LASTMODIFY_TAG : modify }
+                 self.XML_LASTMODIFY_TAG : modify,
+                 self.XML_LINKLIST_TAG : linkList }
                     
         pelem = xml.addChild(self.XML_NOTE_TAG, text, parent, attr)
         if (self.iter_n_children(piter) != 0):
@@ -231,8 +234,9 @@ class NoteModel(gtk.TreeStore):
             note_id = int(attr[self.XML_ID_TAG])
             creation = attr[self.XML_CREATION_TAG]
             modify = attr[self.XML_LASTMODIFY_TAG]
+            linkList = attr[self.XML_LINKLIST_TAG]
                     
-            pelem = self.addNote(node, title, note_id, creation, modify, textbuffer)
+            pelem = self.addNote(node, title, note_id, creation, modify, textbuffer, linkList)
             
         for xmlChild in xmlNode:
             self.insertNoteEntry(pelem, xmlChild)
