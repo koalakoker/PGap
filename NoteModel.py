@@ -58,7 +58,7 @@ class NoteModel(gtk.TreeStore):
         # 1: Int - ID of the note (unique ID inside the db)
         # 2: String - Time stamp (Creation)
         # 3: String - Time stamp (Last modification) 
-        # 4: String - Testo nota
+        # 4: String - Note text
         # 5: String - List of Links separated by '#' 
         self.tagTable = tagTable
         

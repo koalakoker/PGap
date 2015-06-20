@@ -12,6 +12,9 @@ import pango
 from NoteModel import NoteModel
 import os
 
+#TBR
+import gobject
+
 PROGRAM_NAME = "PGap"
 
 class PGapMain:
@@ -46,7 +49,7 @@ class PGapMain:
         handlers = { "onDeleteWindow": gtk.main_quit,
                      "onNewButton": self.onTestClk,
                      "onDeleteButton": self.onTestClk,
-                     "onTestClk": self.onTestClk,
+                    "onTestClk": self.onTestClk,
                      "on_ID_toggled": self.updateColumnView,
                      "on_Last modify_toggled": self.updateColumnView,
                      "on_Creation Time_toggled": self.updateColumnView,
@@ -60,6 +63,9 @@ class PGapMain:
                      "onOpen" : self.onOpen
                    }
         self.builder.connect_signals(handlers)
+        
+#         self.testButton = self.builder.get_object("test")
+#         self.testButton.connect_object("event", self.button_press, None)
             
         #create tagTable
         self.tagTable = gtk.TextTagTable()
@@ -166,6 +172,10 @@ class PGapMain:
             # Note: Tag name must be set in the button label
             tag = self.tagTable.lookup(button.get_label())
             
+        #Verify if tag is link (in this case the user have to select the link Eg. Note ID)
+        if (tag == self.tag_link):
+            pass
+            
         try:
             bounds = self.textbuffer.get_selection_bounds()
             
@@ -252,11 +262,45 @@ class PGapMain:
 #         TextBuffer2HTMLConvert.serialize(self.textbuffer)
 #         self.NoteStore.populate()
 #             self.clipboard.request_text(self.rowChangedCallback)
-            self.appoTxt = gtk.TextBuffer()
-            self.clipboard.request_rich_text(self.appoTxt, self.callbackrich)
+##             self.appoTxt = gtk.TextBuffer()
+##             self.clipboard.request_rich_text(self.appoTxt, self.callbackrich)
 #         diag = gtk.MessageDialog()
 #         diag.show()
+        
+#         menu = gtk.Menu()
+#         menu_item = gtk.MenuItem("A menu item")
+#         menu.append(menu_item)
+#         menu_item.show()
+#         menu.popup(None, None, None, 0, 0)
 
+        dl = gtk.Dialog()
+        dl.set_decorated(False)
+        dl.set_default_size(300,200)
+        
+        ls = gtk.ListStore(gobject.TYPE_STRING, int)
+        
+        for i in range(20):
+            ls.append(["pippo %i" %i,i])
+        
+        tw = gtk.TreeView(ls)
+        tw.show()
+        
+        renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn("Title", renderer, text=0)
+        column2 = gtk.TreeViewColumn("ID", renderer, text=1)
+        tw.append_column(column)
+        tw.append_column(column2)
+
+        
+        sw = gtk.ScrolledWindow()
+        sw.add(tw)
+        sw.show()
+        
+        vb = dl.get_child()
+        vb.add(sw)
+        
+        dl.run()
+        
     def callbackrich(self, clipboard, clformat, text, length, data = None):
         print ("Hey")
 #         print (self, clipboard, clformat, text, length, data)
