@@ -51,7 +51,7 @@ class NoteModel(gtk.TreeStore):
                                gobject.TYPE_STRING,   #2
                                gobject.TYPE_STRING,   #3 
                                gtk.TextBuffer,        #4
-                               gobject.TYPE_OBJECT    #5
+                               gobject.TYPE_STRING    #5
                                )
         #init treestore with the following types
         # 0: String - Title of the note
@@ -59,7 +59,7 @@ class NoteModel(gtk.TreeStore):
         # 2: String - Time stamp (Creation)
         # 3: String - Time stamp (Last modification) 
         # 4: String - Testo nota
-        # 5: List - List of Links 
+        # 5: String - List of Links separated by '#' 
         self.tagTable = tagTable
         
         self.hnd = self.connect("row-changed", self.rowChangedCallback)
@@ -83,14 +83,13 @@ class NoteModel(gtk.TreeStore):
             if (parent == 0):
                 it = initText
             self.disconnect(self.hnd)
-            listID = []
-            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, self.CreateNewBuffer(it, self.tagTable),listID))
+            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, self.CreateNewBuffer(it, self.tagTable),""))
             self.hnd = self.connect("row-changed", self.rowChangedCallback)
             self.newPageID += 1
             for child in range(3):
                 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
                 self.disconnect(self.hnd)
-                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, self.CreateNewBuffer("", self.tagTable)))
+                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, self.CreateNewBuffer("", self.tagTable),""))
                 self.hnd = self.connect("row-changed", self.rowChangedCallback)
                 self.newPageID += 1
     
@@ -107,7 +106,7 @@ class NoteModel(gtk.TreeStore):
         # This function create a totally new note and return the iter to the new node
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         self.disconnect(self.hnd)
-        piter = self.append(node, ('new note %i' % self.newPageID , self.newPageID, now, now, self.CreateNewBuffer('', self.tagTable)))
+        piter = self.append(node, ('new note %i' % self.newPageID , self.newPageID, now, now, self.CreateNewBuffer('', self.tagTable),""))
         self.hnd = self.connect("row-changed", self.rowChangedCallback)
         self.setModified(True)
         self.newPageID += 1
