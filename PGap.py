@@ -72,6 +72,10 @@ class PGapMain:
         self.tag_italic = gtk.TextTag("Italic")
         self.tag_italic.set_property("style", pango.STYLE_ITALIC)
         self.tagTable.add(self.tag_italic)
+        self.tag_link = gtk.TextTag("Link")
+        self.tag_link.set_property("underline", pango.UNDERLINE_SINGLE)
+        self.tag_link.set_property("style", pango.STYLE_ITALIC)
+        self.tagTable.add(self.tag_link)
         
         # create a TreeStore with one string showColumn to use as the model
         self.NoteStore = NoteModel(self.tagTable)
@@ -198,6 +202,8 @@ class PGapMain:
                 self.on_BIU_button_clicked(None, self.tag_italic)
             if (keyPressName == "u"):
                 self.on_BIU_button_clicked(None, self.tag_underline)
+            if (keyPressName == "l"):
+                self.on_BIU_button_clicked(None, self.tag_link)
             if (keyPressName == "z"):
                 self.textbuffer.undo()
             if ((keyPressName == "y") or (keyPressName == "Z")):
