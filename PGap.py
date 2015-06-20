@@ -175,14 +175,10 @@ class PGapMain:
             
         #Verify if tag is link (in this case the user have to select the link Eg. Note ID)
         if (tag == self.tag_link):
-            sel = self.noteBrowser.run()
-            if (sel != 0):
+            noteID = self.noteBrowser.run()
+            if (noteID != 0):
                 # Selection
-                piter = self.treeview.get_selection().get_selected()[1]
-                linkList = self.NoteStore.get_value(piter,5)
-                linkList += "#" + str(sel)
-                self.NoteStore.set_value(piter,5,linkList)
-                print (linkList)
+                self.NoteStore.addLink(self.getNoteIter(), noteID)
                 pass
         try:
             bounds = self.textbuffer.get_selection_bounds()
@@ -292,6 +288,20 @@ class PGapMain:
     def cell_edited_callback(self, cellrenderertext, path, new_text):
         piter = self.NoteStore.get_iter(path)
         self.NoteStore.set_value(piter, 0, new_text)
+    
+    def getNoteValue(self, col):
+        #Get the value from the selected note in the Tree View
+        piter = self.treeview.get_selection().get_selected()[1]
+        return self.NoteStore.get_value(piter,col)    
+    
+    def setNoteValue(self, col, value):
+        #Set the vaule to the selected note in the Tree View
+        piter = self.treeview.get_selection().get_selected()[1]
+        self.NoteStore.set_value(piter, col, value)
+        
+    def getNoteIter(self):
+        #Get the selected noter iter for the Note Model
+        return self.treeview.get_selection().get_selected()[1]
         
     def onSave(self, menuItm = None):
         if (self.fileSelected == None):

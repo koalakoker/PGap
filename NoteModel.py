@@ -25,6 +25,7 @@ COL_ID = 1
 COL_Creation = 2
 COL_Modify = 3
 COL_Text = 4
+COL_LinkList = 5
 
 class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
@@ -119,6 +120,17 @@ class NoteModel(gtk.TreeStore):
         piter = self.append(node, (title , idNote, creation, modify, textbuffer))
         self.hnd = self.connect("row-changed", self.rowChangedCallback)
         return piter
+    
+    def addLink(self, piter, noteID):
+        # Add a new link to the noteID to the link list
+        linkList = self.get_value(piter, COL_LinkList) 
+        if (linkList == ""):
+            separator = ""
+        else:
+            separator = "#"
+        linkList += separator + str(noteID)
+        self.set_value(piter, COL_LinkList, linkList)
+        print (linkList)
     
     def save(self, filename = None):
         
