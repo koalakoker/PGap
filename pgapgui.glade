@@ -458,6 +458,7 @@
                         <signal name="button-press-event" handler="buttonPress" swapped="no"/>
                         <signal name="key-release-event" handler="keyrelease" swapped="no"/>
                         <signal name="key-press-event" handler="keypress" swapped="no"/>
+                        <signal name="motion-notify-event" handler="mousemove" swapped="no"/>
                       </object>
                     </child>
                   </object>

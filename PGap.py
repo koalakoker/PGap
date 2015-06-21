@@ -54,6 +54,7 @@ class PGapMain:
                      "keypress": self.onKeyPress,
                      "keyrelease": self.onKeyRelease,
                      "buttonPress": self.onButtonPress,
+                     "mousemove": self.onMouseMove,
                      "onCursorChanged": self.onNoteSelectionChange,
                      "onNewNote": self.onNewNote,
                      "on_BIU_button_clicked": self.on_BIU_button_clicked,
@@ -88,7 +89,7 @@ class PGapMain:
         self.tag_hidden.set_property("style", pango.STYLE_ITALIC)
         color = gdk.Color(65535,0,0) #Link color
         self.tag_hidden.set_property("foreground-gdk", color)
-#         self.tag_hidden.set_property("invisible", True)
+        self.tag_hidden.set_property("invisible", True)
         self.tagTable.add(self.tag_hidden)
         
         # create a TreeStore with one string showColumn to use as the model
@@ -252,6 +253,11 @@ class PGapMain:
             if (self.textbuffer.isTagSelected(start, self.tag_link)):
                 print ("Link + Implement with CTRL")
                 print (self.textbuffer.getLink(self.tag_link, self.tag_hidden, start))
+                
+    def onMouseMove(self, widget, event):
+        start = widget.get_iter_at_location(int(event.x), int(event.y))
+        if (self.textbuffer.isTagSelected(start, self.tag_link)):
+            print ("Link + Implement with CTRL")
     
     def getNoteSelected(self):
         # Returns the node of self.TreeView that is selected or None
