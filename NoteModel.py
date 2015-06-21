@@ -42,7 +42,6 @@ class NoteModel(gtk.TreeStore):
     XML_ID_TAG = "ID"
     XML_CREATION_TAG = "CreationDate"
     XML_LASTMODIFY_TAG = "LastModify"
-    XML_LINKLIST_TAG = "LinkList"
     
     XML_VER = "1.0"
     
@@ -53,15 +52,13 @@ class NoteModel(gtk.TreeStore):
                                gobject.TYPE_STRING,   #2
                                gobject.TYPE_STRING,   #3 
                                gtk.TextBuffer,        #4
-                               gobject.TYPE_STRING    #5
                                )
         #init treestore with the following types
         # 0: String - Title of the note
         # 1: Int - ID of the note (unique ID inside the db)
         # 2: String - Time stamp (Creation)
         # 3: String - Time stamp (Last modification) 
-        # 4: String - Note text
-        # 5: String - List of Links separated by '#' 
+        # 4: String - Note text 
         self.tagTable = tagTable
         
         self.hnd = self.connect("row-changed", self.rowChangedCallback)
@@ -85,13 +82,13 @@ class NoteModel(gtk.TreeStore):
             if (parent == 0):
                 it = initText
             self.disconnect(self.hnd)
-            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, self.CreateNewBuffer(it, self.tagTable),""))
+            piter = self.append(None, ('parent %i' % parent, self.newPageID, now, now, self.CreateNewBuffer(it, self.tagTable)))
             self.hnd = self.connect("row-changed", self.rowChangedCallback)
             self.newPageID += 1
             for child in range(3):
                 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
                 self.disconnect(self.hnd)
-                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, self.CreateNewBuffer("", self.tagTable),""))
+                self.append(piter, ('child %i of parent %i' % (child, parent), self.newPageID, now, now, self.CreateNewBuffer("", self.tagTable)))
                 self.hnd = self.connect("row-changed", self.rowChangedCallback)
                 self.newPageID += 1
     
@@ -108,32 +105,20 @@ class NoteModel(gtk.TreeStore):
         # This function create a totally new note and return the iter to the new node
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         self.disconnect(self.hnd)
-        piter = self.append(node, ('new note %i' % self.newPageID , self.newPageID, now, now, self.CreateNewBuffer('', self.tagTable),""))
+        piter = self.append(node, ('new note %i' % self.newPageID , self.newPageID, now, now, self.CreateNewBuffer('', self.tagTable)))
         self.hnd = self.connect("row-changed", self.rowChangedCallback)
         self.setModified(True)
         self.newPageID += 1
         return piter
     
-    def addNote(self, node, title, idNote, creation, modify, textbuffer, linkList):
+    def addNote(self, node, title, idNote, creation, modify, textbuffer):
         # This function add a note in the tree and return the iter to the node
         
         self.disconnect(self.hnd)
-        piter = self.append(node, (title , idNote, creation, modify, textbuffer, linkList))
+        piter = self.append(node, (title , idNote, creation, modify, textbuffer))
         self.hnd = self.connect("row-changed", self.rowChangedCallback)
         return piter
-    
-    def addLink(self, piter, noteID):
-        # Add a new link to the noteID to the link list
-        linkList = self.get_value(piter, COL_LinkList) 
-        if (linkList == ""):
-            separator = ""
-        else:
-            separator = "#"
-        linkList += separator + str(noteID)
-        self.set_value(piter, COL_LinkList, linkList)
-        print (linkList)
-        
-        
+            
     def getLink(self, piter, num):
         # Get link of the selected Note order num
         linkList = self.get_value(piter, COL_LinkList)
@@ -195,12 +180,10 @@ class NoteModel(gtk.TreeStore):
         note_id = self.get_value(piter, COL_ID)
         creation = self.get_value(piter, COL_Creation)
         modify = self.get_value(piter, COL_Modify)
-        linkList = self.get_value(piter, COL_LinkList)
         attr = { self.XML_TITLE_TAG : title,
                  self.XML_ID_TAG : str(note_id),
                  self.XML_CREATION_TAG : creation,
-                 self.XML_LASTMODIFY_TAG : modify,
-                 self.XML_LINKLIST_TAG : linkList }
+                 self.XML_LASTMODIFY_TAG : modify }
                     
         pelem = xml.addChild(self.XML_NOTE_TAG, text, parent, attr)
         if (self.iter_n_children(piter) != 0):
@@ -241,9 +224,8 @@ class NoteModel(gtk.TreeStore):
             note_id = int(attr[self.XML_ID_TAG])
             creation = attr[self.XML_CREATION_TAG]
             modify = attr[self.XML_LASTMODIFY_TAG]
-            linkList = attr[self.XML_LINKLIST_TAG]
                     
-            pelem = self.addNote(node, title, note_id, creation, modify, textbuffer, linkList)
+            pelem = self.addNote(node, title, note_id, creation, modify, textbuffer)
             
         for xmlChild in xmlNode:
             self.insertNoteEntry(pelem, xmlChild)

@@ -48,14 +48,45 @@ class undobufferrich(undobuffer.UndoableBuffer):
             self.apply_tag(tag, start, end)
         else:
             self.remove_tag(tag, start, end)
-            
-    def toggleLink(self, tag_link, tag_hidden, start, end, link):
-        if not (self.isBlockTagged(tag_link, start.copy(), end)):
-            self.apply_tag(tag_link, start, end)
-            self.insert_with_tags(end, link, tag_hidden)
-        else:
-            self.remove_tag(tag_link, start, end)
-            start.forward_to_tag_toggle(None)
-            end = start
-            end.forwartd_to_tag_toggle(None)
-            self.delete(start,end)
+                
+    def addLink(self, tag_link, tag_link_hidden, start, end, link):
+        self.apply_tag(tag_link, start, end)
+        self.insert_with_tags(end, link, tag_link_hidden)
+        
+    def removeLink(self, tag_link, tag_link_hidden, start):
+        # Check if link tag is selected
+        if not (self.isTagSelected(start, tag_link)):
+            return
+        
+        # find tag bounds
+        localStart = start.copy()
+        localEnd = start.copy()
+        
+        localStart.backward_to_tag_toggle(tag_link)
+        localEnd.forward_to_tag_toggle(tag_link)
+        self.remove_tag(tag_link, localStart, localEnd)
+        localStart.forward_to_tag_toggle(tag_link_hidden)
+        localEnd.forward_to_tag_toggle(tag_link_hidden)
+        self.delete(localStart,localEnd)
+        
+    def getLink(self, tag_link, tag_link_hidden, start):
+        # Check if link tag is selected
+        if not (self.isTagSelected(start, tag_link)):
+            return
+        
+        if (self.isTagSelected(start, tag_link_hidden)):
+            return
+        
+        localStart = start.copy() 
+        
+        localStart.forward_to_tag_toggle(tag_link_hidden)
+        localEnd = localStart.copy()
+        localEnd.forward_to_tag_toggle(tag_link_hidden)
+        return self.get_text(localStart, localEnd)
+        
+    def isTagSelected(self, start, tag):
+        tags = start.get_tags()
+        retVal = False
+        if (tag in tags):
+            retVal = True
+        return retVal

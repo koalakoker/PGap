@@ -88,6 +88,7 @@ class PGapMain:
         self.tag_hidden.set_property("style", pango.STYLE_ITALIC)
         color = gdk.Color(65535,0,0) #Link color
         self.tag_hidden.set_property("foreground-gdk", color)
+#         self.tag_hidden.set_property("invisible", True)
         self.tagTable.add(self.tag_hidden)
         
         # create a TreeStore with one string showColumn to use as the model
@@ -181,23 +182,24 @@ class PGapMain:
             # Select Tag from button clicked
             # Note: Tag name must be set in the button label
             tag = self.tagTable.lookup(button.get_label())
-            
-        #Verify if tag is link (in this case the user have to select the link Eg. Note ID)
-        noteID = -1
-        if (tag == self.tag_link):
-            noteID = self.noteBrowser.run()
-            if (noteID != 0):
-                # Selection
-                self.NoteStore.addLink(self.getNoteIter(), noteID)
-                pass
+                    
         try:
             bounds = self.textbuffer.get_selection_bounds()
             
             if len(bounds) != 0:
                 start, end = bounds
-                self.textbuffer.toggleTag(tag, start, end)
-                if (noteID != -1):
-                    self.textbuffer.toggleLink(self.tag_link, self.tag_hidden, start, end, "#" + str(noteID))
+                
+                #Verify if tag is link (in this case the user have to select the link Eg. Note ID)
+                if (tag == self.tag_link):
+                    if (self.textbuffer.isTagSelected(start, self.tag_link)):
+                        self.textbuffer.removeLink(self.tag_link, self.tag_hidden, start)
+                    else:
+                        noteID = self.noteBrowser.run()
+                        if (noteID != 0):
+                            self.textbuffer.addLink(self.tag_link, self.tag_hidden, start, end, "#" + str(noteID))
+                else:
+                    self.textbuffer.toggleTag(tag, start, end)
+                
                 
         except AttributeError:
             pass
@@ -246,29 +248,11 @@ class PGapMain:
 
     def onButtonPress(self, widget, event):
         if (event.button == 1):
-            piter = widget.get_iter_at_location(int(event.x), int(event.y))
-            tags = piter.get_tags()
-            if (self.tag_link in tags):
+            start = widget.get_iter_at_location(int(event.x), int(event.y))
+            if (self.textbuffer.isTagSelected(start, self.tag_link)):
                 print ("Link + Implement with CTRL")
-                self.cnt = -1
-                def iteraction(start, end):
-                    if (start.get_offset() > end.get_offset()):
-                        return
-                    tags = start.get_tags()
-                    if (self.tag_link in tags):
-                        self.cnt = self.cnt + 1
-                    start.forward_to_tag_toggle(None)
-                    iteraction(start, end)
-                    
-                textBuffer = widget.get_buffer() 
-                start = textBuffer.get_start_iter()
-                end = piter
-                iteraction(start, end)
-                print ("Found at %i" % self.cnt)
-                noteID = self.NoteStore.getLink(self.getNoteIter(), self.cnt)
-                print ("Note ID " + noteID)
-                
-
+                print (self.textbuffer.getLink(self.tag_link, self.tag_hidden, start))
+    
     def getNoteSelected(self):
         # Returns the node of self.TreeView that is selected or None
         itersel = None
