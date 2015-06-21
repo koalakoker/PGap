@@ -80,7 +80,15 @@ class PGapMain:
         self.tag_link = gtk.TextTag("Link")
         self.tag_link.set_property("underline", pango.UNDERLINE_SINGLE)
         self.tag_link.set_property("style", pango.STYLE_ITALIC)
+        color = gdk.Color(0,0,65535) #Link color
+        self.tag_link.set_property("foreground-gdk", color)
         self.tagTable.add(self.tag_link)
+        self.tag_hidden = gtk.TextTag("Hidden")
+        self.tag_hidden.set_property("underline", pango.UNDERLINE_SINGLE)
+        self.tag_hidden.set_property("style", pango.STYLE_ITALIC)
+        color = gdk.Color(65535,0,0) #Link color
+        self.tag_hidden.set_property("foreground-gdk", color)
+        self.tagTable.add(self.tag_hidden)
         
         # create a TreeStore with one string showColumn to use as the model
         self.NoteStore = NoteModel(self.tagTable)
@@ -175,6 +183,7 @@ class PGapMain:
             tag = self.tagTable.lookup(button.get_label())
             
         #Verify if tag is link (in this case the user have to select the link Eg. Note ID)
+        noteID = -1
         if (tag == self.tag_link):
             noteID = self.noteBrowser.run()
             if (noteID != 0):
@@ -187,6 +196,8 @@ class PGapMain:
             if len(bounds) != 0:
                 start, end = bounds
                 self.textbuffer.toggleTag(tag, start, end)
+                if (noteID != -1):
+                    self.textbuffer.toggleLink(self.tag_link, self.tag_hidden, start, end, "#" + str(noteID))
                 
         except AttributeError:
             pass

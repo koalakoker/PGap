@@ -48,3 +48,14 @@ class undobufferrich(undobuffer.UndoableBuffer):
             self.apply_tag(tag, start, end)
         else:
             self.remove_tag(tag, start, end)
+            
+    def toggleLink(self, tag_link, tag_hidden, start, end, link):
+        if not (self.isBlockTagged(tag_link, start.copy(), end)):
+            self.apply_tag(tag_link, start, end)
+            self.insert_with_tags(end, link, tag_hidden)
+        else:
+            self.remove_tag(tag_link, start, end)
+            start.forward_to_tag_toggle(None)
+            end = start
+            end.forwartd_to_tag_toggle(None)
+            self.delete(start,end)
