@@ -53,6 +53,7 @@ class PGapMain:
                      "on_Creation Time_toggled": self.updateColumnView,
                      "keypress": self.onKeyPress,
                      "keyrelease": self.onKeyRelease,
+                     "mousemove": self.onMouseMove,
                      "onCursorChanged": self.onNoteSelectionChange,
                      "onNewNote": self.onNewNote,
                      "on_BIU_button_clicked": self.on_BIU_button_clicked,
@@ -245,26 +246,25 @@ class PGapMain:
         if (keyPressName == "Escape"):
             self.onKeyEsc()
 #         print (gtk.gdk.keyval_name(event.keyval))
-
-    def onButtonPress(self, widget, event):
-        if (event.button == 1):
-            start = widget.get_iter_at_location(int(event.x), int(event.y))
-            if (self.textbuffer.isTagSelected(start, self.tag_link)):
-                print ("Link + Implement with CTRL")
-                print (self.textbuffer.getLink(self.tag_link, self.tag_hidden, start))
                 
     def onMouseMove(self, widget, event):
         start = widget.get_iter_at_location(int(event.x), int(event.y))
         if (self.textbuffer.isTagSelected(start, self.tag_link)):
-            print ("Link + Implement with CTRL")
-            
-    def tagLinkEvent(self, tag, widget, event, piter):
-        if (event.type == gtk.gdk.MOTION_NOTIFY):
             cur = gtk.gdk.Cursor(gtk.gdk.HAND1)
             event.window.set_cursor(cur)
+            widget.set_tooltip_text("ctrl + mouse left click to open the link")
         else:
-            print (event.type)
-    
+            event.window.set_cursor(None)
+            widget.set_tooltip_text(None)
+            
+    def tagLinkEvent(self, tag, widget, event, piter):
+        if (event.type == gtk.gdk.BUTTON_PRESS):
+            if (event.button == 1):
+                start = widget.get_iter_at_location(int(event.x), int(event.y))
+                if (self.textbuffer.isTagSelected(start, self.tag_link)):
+                    if (self.keyCtrlPressed):
+                        print (self.textbuffer.getLink(self.tag_link, self.tag_hidden, start))
+        
     def getNoteSelected(self):
         # Returns the node of self.TreeView that is selected or None
         itersel = None
