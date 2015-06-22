@@ -25,7 +25,6 @@ COL_ID = 1
 COL_Creation = 2
 COL_Modify = 3
 COL_Text = 4
-COL_LinkList = 5
 
 class NoteModel(gtk.TreeStore):
     newPageID = 2 #default value 1 is the welcome screen
@@ -118,12 +117,17 @@ class NoteModel(gtk.TreeStore):
         piter = self.append(node, (title , idNote, creation, modify, textbuffer))
         self.hnd = self.connect("row-changed", self.rowChangedCallback)
         return piter
-            
-    def getLink(self, piter, num):
-        # Get link of the selected Note order num
-        linkList = self.get_value(piter, COL_LinkList)
-        links = linkList.split("#")
-        return links[num]
+    
+    def findNoteID(self, noteID):
+        self.noteIDPath = None
+        def findNoteIDFunc(model, path, piter, noteID):
+            ID = model.get_value(piter, COL_ID)
+            if (ID == noteID):
+                self.noteIDPath = path
+                return True
+        
+        self.foreach(findNoteIDFunc, noteID)
+        return self.noteIDPath
     
     def save(self, filename = None):
         
@@ -238,5 +242,5 @@ if __name__ == '__main__':
     note = NoteModel()
     note.populate()
     note.CreateNewNote()
-    note.save("test.xml")
+#     note.save("test.xml")
     pass

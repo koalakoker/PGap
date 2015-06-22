@@ -261,9 +261,16 @@ class PGapMain:
         if (event.type == gtk.gdk.BUTTON_PRESS):
             if (event.button == 1):
                 start = widget.get_iter_at_location(int(event.x), int(event.y))
-                if (self.textbuffer.isTagSelected(start, self.tag_link)):
+                tb = self.textbuffer
+                if (tb.isTagSelected(start, self.tag_link)):
                     if (self.keyCtrlPressed):
-                        print (self.textbuffer.getLink(self.tag_link, self.tag_hidden, start))
+                        link = tb.getLink(self.tag_link, self.tag_hidden, start)
+                        if (tb.isInternalLink(link)):
+                            noteID = tb.getNoteIDFromLink(link)
+                            noteIDPath = self.NoteStore.findNoteID(noteID)
+                            sel = self.treeview.get_selection() 
+                            sel.select_path(noteIDPath)
+                            self.treeview.emit("cursor-changed")
         
     def getNoteSelected(self):
         # Returns the node of self.TreeView that is selected or None

@@ -90,3 +90,13 @@ class undobufferrich(undobuffer.UndoableBuffer):
         if (tag in tags):
             retVal = True
         return retVal
+    
+    def isInternalLink(self, link):
+        if (link[0] == '#'):
+            return True
+        else:
+            return False
+        
+    def getNoteIDFromLink(self, link):
+        NoteID = link[1:]
+        return int(NoteID)
