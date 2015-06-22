@@ -53,8 +53,6 @@ class PGapMain:
                      "on_Creation Time_toggled": self.updateColumnView,
                      "keypress": self.onKeyPress,
                      "keyrelease": self.onKeyRelease,
-                     "buttonPress": self.onButtonPress,
-                     "mousemove": self.onMouseMove,
                      "onCursorChanged": self.onNoteSelectionChange,
                      "onNewNote": self.onNewNote,
                      "on_BIU_button_clicked": self.on_BIU_button_clicked,
@@ -83,6 +81,7 @@ class PGapMain:
         self.tag_link.set_property("style", pango.STYLE_ITALIC)
         color = gdk.Color(0,0,65535) #Link color
         self.tag_link.set_property("foreground-gdk", color)
+        self.tag_link.connect("event", self.tagLinkEvent)
         self.tagTable.add(self.tag_link)
         self.tag_hidden = gtk.TextTag("Hidden")
         self.tag_hidden.set_property("underline", pango.UNDERLINE_SINGLE)
@@ -258,6 +257,13 @@ class PGapMain:
         start = widget.get_iter_at_location(int(event.x), int(event.y))
         if (self.textbuffer.isTagSelected(start, self.tag_link)):
             print ("Link + Implement with CTRL")
+            
+    def tagLinkEvent(self, tag, widget, event, piter):
+        if (event.type == gtk.gdk.MOTION_NOTIFY):
+            cur = gtk.gdk.Cursor(gtk.gdk.HAND1)
+            event.window.set_cursor(cur)
+        else:
+            print (event.type)
     
     def getNoteSelected(self):
         # Returns the node of self.TreeView that is selected or None

@@ -455,10 +455,8 @@
                         <property name="wrap_mode">word</property>
                         <property name="left_margin">5</property>
                         <property name="right_margin">5</property>
-                        <signal name="button-press-event" handler="buttonPress" swapped="no"/>
                         <signal name="key-release-event" handler="keyrelease" swapped="no"/>
                         <signal name="key-press-event" handler="keypress" swapped="no"/>
-                        <signal name="motion-notify-event" handler="mousemove" swapped="no"/>
                       </object>
                     </child>
                   </object>
