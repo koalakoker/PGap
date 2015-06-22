@@ -92,6 +92,8 @@
     <property name="window_position">center</property>
     <property name="default_width">640</property>
     <property name="default_height">480</property>
+    <signal name="key-release-event" handler="keyrelease" swapped="no"/>
+    <signal name="key-press-event" handler="keypress" swapped="no"/>
     <child>
       <object class="GtkVBox" id="vbox">
         <property name="visible">True</property>
@@ -169,6 +171,7 @@
                         <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="onQuit" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -455,8 +458,6 @@
                         <property name="wrap_mode">word</property>
                         <property name="left_margin">5</property>
                         <property name="right_margin">5</property>
-                        <signal name="key-release-event" handler="keyrelease" swapped="no"/>
-                        <signal name="key-press-event" handler="keypress" swapped="no"/>
                         <signal name="motion-notify-event" handler="mousemove" swapped="no"/>
                       </object>
                     </child>

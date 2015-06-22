@@ -32,6 +32,14 @@ class PGapMain:
 
     # close the window and quit
     def delete_event(self, widget=None, event=None, data=None):
+        if (self.NoteStore.modified):
+            message = gtk.MessageDialog(type=gtk.MESSAGE_WARNING, buttons=gtk.BUTTONS_YES_NO)
+            message.set_title("Note has been modified")
+            message.set_markup("Are you sure you want to quit without save?")
+            res = message.run()
+            message.destroy()
+            if (res != gtk.RESPONSE_YES):
+                return    
         gtk.main_quit()
         return False
         
@@ -59,7 +67,8 @@ class PGapMain:
                      "on_BIU_button_clicked": self.on_BIU_button_clicked,
                      "onSave" : self.onSave,
                      "onSaveAs" : self.onSaveAs,
-                     "onOpen" : self.onOpen
+                     "onOpen" : self.onOpen,
+                     "onQuit" : self.delete_event
                    }
         self.builder.connect_signals(handlers)
         
@@ -102,6 +111,7 @@ class PGapMain:
         # create the TreeView using NoteStore
         self.treeview =  self.builder.get_object("treeview")
         self.treeview.set_model(self.NoteStore)
+        self.treeviewSelection = self.treeview.get_selection()
         
         self.tvcolumn = []
         self.cell = []
@@ -139,7 +149,7 @@ class PGapMain:
         renderer.connect('edited', self.cell_edited_callback)
         
         self.textview = self.builder.get_object("textview")
-        self.onNoteSelectionChange(self.treeview)
+        self.noteSelect(0)
                 
         self.keyCtrlPressed = False
         
@@ -204,16 +214,17 @@ class PGapMain:
                 
         except AttributeError:
             pass
-        
-            
     
     def onKeyEsc(self):
-        bounds = self.textbuffer.get_selection_bounds()
-        if len(bounds) != 0:
-            tb = self.textbuffer
-            tb.select_range(tb.get_end_iter(),tb.get_end_iter())
-        else:
-            self.delete_event()
+        try:
+            bounds = self.textbuffer.get_selection_bounds()
+            if len(bounds) != 0:
+                tb = self.textbuffer
+                tb.select_range(tb.get_end_iter(),tb.get_end_iter())
+                return
+        except:
+            pass
+        self.delete_event()
     
     def onKeyRelease(self, widget, event):
         keyPressName = gdk.keyval_name(event.keyval)
@@ -253,6 +264,7 @@ class PGapMain:
             cur = gtk.gdk.Cursor(gtk.gdk.HAND1)
             event.window.set_cursor(cur)
             widget.set_tooltip_text("ctrl + mouse left click to open the link")
+            self.textview.grab_focus()
         else:
             event.window.set_cursor(None)
             widget.set_tooltip_text(None)
@@ -267,10 +279,8 @@ class PGapMain:
                         link = tb.getLink(self.tag_link, self.tag_hidden, start)
                         if (tb.isInternalLink(link)):
                             noteID = tb.getNoteIDFromLink(link)
-                            noteIDPath = self.NoteStore.findNoteID(noteID)
-                            sel = self.treeview.get_selection() 
-                            sel.select_path(noteIDPath)
-                            self.treeview.emit("cursor-changed")
+                            noteIDPath = self.NoteStore.findNoteID(noteID) 
+                            self.noteSelect(noteIDPath)
         
     def getNoteSelected(self):
         # Returns the node of self.TreeView that is selected or None
@@ -280,7 +290,7 @@ class PGapMain:
             itersel = treeView.get_selection().get_selected()[1]
         return itersel
 
-    def onNoteSelectionChange(self, treeView = None):
+    def onNoteSelectionChange(self, treeView):
         itersel = self.getNoteSelected()
         if (itersel == None):
             itersel = self.NoteStore.get_iter_root()
@@ -288,6 +298,7 @@ class PGapMain:
             self.textbuffer = self.NoteStore.get_value(itersel, 4)
             self.textview.set_buffer(self.textbuffer)
             self.textview.set_sensitive(True)
+            self.textview.grab_focus()
         else:
             self.textview.set_sensitive(False)
             
@@ -342,6 +353,10 @@ class PGapMain:
     def getNoteIter(self):
         #Get the selected noter iter for the Note Model
         return self.treeview.get_selection().get_selected()[1]
+    
+    def noteSelect(self, path):
+        self.treeviewSelection.select_path(path)
+        self.treeview.emit("cursor-changed")
         
     def onSave(self, menuItm = None):
         if (self.fileSelected == None):
@@ -395,6 +410,8 @@ class PGapMain:
             else:
                 self.fileSelected = fileSelected
                 self.updateTitle()
+                self.noteSelect(0)
+                
         chooser.destroy()
         
 if __name__ == '__main__':

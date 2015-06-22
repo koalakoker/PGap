@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<root Version="1.0"><note CreationDate="2015-06-22 15:14" ID="2" LastModify="2015-06-22 15:14" Title="parent 0">GTKTEXTBUFFERCONTENTS-0001##@@## &lt;text_view_markup&gt;
+<root Version="1.0"><note CreationDate="2015-06-22 15:14" ID="2" LastModify="2015-06-22 15:53" Title="parent 0">GTKTEXTBUFFERCONTENTS-0001##@@## &lt;text_view_markup&gt;
  &lt;tags&gt;
   &lt;tag name="Link" priority="3"&gt;
    &lt;attr name="foreground-gdk" type="GdkColor" value="0:0:ffff" /&gt;
@@ -12,8 +12,11 @@
    &lt;attr name="underline" type="PangoUnderline" value="PANGO_UNDERLINE_SINGLE" /&gt;
    &lt;attr name="invisible" type="gboolean" value="TRUE" /&gt;
   &lt;/tag&gt;
+  &lt;tag name="Bold" priority="0"&gt;
+   &lt;attr name="weight" type="gint" value="700" /&gt;
+  &lt;/tag&gt;
  &lt;/tags&gt;
-&lt;text&gt;Welcome to OGapp!
+&lt;text&gt;&lt;apply_tag name="Bold"&gt;Welcome to OGapp!&lt;/apply_tag&gt;
 
 OGapp is a slim sized and fast program to manage your textual notes. Notes are organized in pages and it is possible to setup a main password to get the access to the notes. When the notes are password protected the .ogp file in which the notes are stored will be encrypted.
 OGapp is cross platform and is available for Windows, Linux and (maybe in the future) Mac. It is based on Qt4 and is written in C++.
