@@ -37,6 +37,7 @@ class noteBrowserWidget(object):
 
         self.dl = self.builder.get_object("noteBrowse")
 #         dl.connect("delete_event", self.delete_event)
+        dl.connect("noteBrowse_row_activated", self.rowActivated)
 
     def run(self):
         # It show the selectiopn widget and whai for the user action.
@@ -53,3 +54,6 @@ class noteBrowserWidget(object):
             pass
         self.dl.hide()
         return retVal
+    
+    def rowActivated(self):
+        print ("Select")

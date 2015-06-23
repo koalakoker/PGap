@@ -70,6 +70,7 @@
               <object class="GtkTreeView" id="noteTreeView">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <signal name="row-activated" handler="noteBrowse_row_activated" swapped="no"/>
               </object>
             </child>
           </object>
