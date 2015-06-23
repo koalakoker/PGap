@@ -28,6 +28,7 @@ class noteBrowserWidget(object):
         self.tw = self.builder.get_object("noteTreeView")
         self.tw.set_model(self.NoteStore)
         self.tw.expand_all()
+        self.tw.connect("row-activated", self.rowActivated)
         
         renderer = gtk.CellRendererText()
         column = gtk.TreeViewColumn("Title", renderer, text=0)
@@ -36,11 +37,9 @@ class noteBrowserWidget(object):
         self.tw.append_column(column2)
 
         self.dl = self.builder.get_object("noteBrowse")
-#         dl.connect("delete_event", self.delete_event)
-        dl.connect("noteBrowse_row_activated", self.rowActivated)
-
+        
     def run(self):
-        # It show the selectiopn widget and whai for the user action.
+        # It show the selection widget and wait for the user action.
         # Returns 0 if no selection or selection ID
         # self.piter stores the iter pointer to the selected items in NoteStore
         retVal = 0 # No selection
@@ -55,5 +54,5 @@ class noteBrowserWidget(object):
         self.dl.hide()
         return retVal
     
-    def rowActivated(self):
-        print ("Select")
+    def rowActivated(self, treeview, path, view_column):
+        self.dl.emit("response", 1)

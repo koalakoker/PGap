@@ -51,30 +51,7 @@ class PGapMain:
         self.window.resize(1024,600)
         self.window.show_all()
         self.window.connect("delete_event", self.delete_event)
-        
-        handlers = { "onDeleteWindow": gtk.main_quit,
-                     "onNewButton": self.onTestClk,
-                     "onDeleteButton": self.onTestClk,
-                    "onTestClk": self.onTestClk,
-                     "on_ID_toggled": self.updateColumnView,
-                     "on_Last modify_toggled": self.updateColumnView,
-                     "on_Creation Time_toggled": self.updateColumnView,
-                     "keypress": self.onKeyPress,
-                     "keyrelease": self.onKeyRelease,
-                     "mousemove": self.onMouseMove,
-                     "onCursorChanged": self.onNoteSelectionChange,
-                     "onNewNote": self.onNewNote,
-                     "on_BIU_button_clicked": self.on_BIU_button_clicked,
-                     "onSave" : self.onSave,
-                     "onSaveAs" : self.onSaveAs,
-                     "onOpen" : self.onOpen,
-                     "onQuit" : self.delete_event
-                   }
-        self.builder.connect_signals(handlers)
-        
-#         self.testButton = self.builder.get_object("test")
-#         self.testButton.connect_object("event", self.button_press, None)
-            
+                    
         #create tagTable
         self.tagTable = gtk.TextTagTable()
         self.tag_bold = gtk.TextTag("Bold")
@@ -161,6 +138,27 @@ class PGapMain:
         
         # Note Browser Widget
         self.noteBrowser = noteBrowserWidget.noteBrowserWidget(self.gladefile, self.NoteStore)
+        
+        handlers = { "onDeleteWindow": gtk.main_quit,
+                     "onNewButton": self.onTestClk,
+                     "onDeleteButton": self.onTestClk,
+                    "onTestClk": self.onTestClk,
+                     "on_ID_toggled": self.updateColumnView,
+                     "on_Last modify_toggled": self.updateColumnView,
+                     "on_Creation Time_toggled": self.updateColumnView,
+                     "keypress": self.onKeyPress,
+                     "keyrelease": self.onKeyRelease,
+                     "mousemove": self.onMouseMove,
+                     "onCursorChanged": self.onNoteSelectionChange,
+                     "onNewNote": self.onNewNote,
+                     "on_BIU_button_clicked": self.on_BIU_button_clicked,
+                     "onSave" : self.onSave,
+                     "onSaveAs" : self.onSaveAs,
+                     "onOpen" : self.onOpen,
+                     "onQuit" : self.delete_event
+                   }
+        
+        self.builder.connect_signals(handlers)
         
     def onTitleChanged(self, NoteModel):
         self.updateTitle()
