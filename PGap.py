@@ -33,12 +33,18 @@ class PGapMain:
     # close the window and quit
     def delete_event(self, widget=None, event=None, data=None):
         if (self.NoteStore.modified):
-            message = gtk.MessageDialog(type=gtk.MESSAGE_WARNING, buttons=gtk.BUTTONS_YES_NO)
-            message.set_title("Note has been modified")
-            message.set_markup("Are you sure you want to quit without save?")
+            message = gtk.MessageDialog(type=gtk.MESSAGE_WARNING, buttons=gtk.BUTTONS_NONE)
+            message.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+            message.add_button(gtk.STOCK_NO, gtk.RESPONSE_NO)
+            message.add_button(gtk.STOCK_YES, gtk.RESPONSE_YES)
+            message.set_default_response(gtk.RESPONSE_YES)
+            message.set_title("Save Notes")
+            message.set_markup("Notes have been modified. Save changes?")
             res = message.run()
             message.destroy()
-            if (res != gtk.RESPONSE_YES):
+            if (res == gtk.RESPONSE_YES):
+                self.onSave(None)
+            elif ((res == gtk.RESPONSE_CANCEL) or (res == gtk.RESPONSE_DELETE_EVENT)):
                 return    
         gtk.main_quit()
         return False
